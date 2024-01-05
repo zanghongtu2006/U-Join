@@ -43,6 +43,18 @@ public class ClientStompSessionHandler extends StompSessionHandlerAdapter {
         String message = "one-time message from client";
         log.info("Client sends: {}", message);
         session.send("/app/hello", new HelloMessage(message));
+        session.subscribe("/user/topic/greetings", new StompFrameHandler() {
+            @Override
+            public Type getPayloadType(StompHeaders headers) {
+                return HelloMessage.class; // 替换成你期望的消息类型
+            }
+
+            @Override
+            public void handleFrame(StompHeaders headers, Object payload) {
+                HelloMessage message = (HelloMessage) payload;
+                log.info("Recv {}", message);
+            }
+        });
 
         // 订阅指定主题
         session.subscribe("/topic/chat-reply", new StompFrameHandler() {
