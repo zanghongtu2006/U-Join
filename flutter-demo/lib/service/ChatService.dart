@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter_demo/service/model/HelloMessage.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
@@ -8,7 +7,7 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 class ChatService {
   late StompClient stompClient;
 
-  void connect() {
+  void connectWithRetry() {
     stompClient = StompClient(
       config: StompConfig.sockJS(
         url: 'http://192.168.168.15:8080/chatserver',
@@ -16,10 +15,21 @@ class ChatService {
         onConnect: onConnectCallback,
         onWebSocketError: (e) => print(e.toString()),
         onStompError: (d) => print('error stomp'),
-        onDisconnect: (f) => print('disconnected'),
+        heartbeatIncoming: const Duration(seconds: 10),
+        heartbeatOutgoing: const Duration(seconds: 10),
+        onDisconnect: (f) {
+          onDisconnected();
+          Future.delayed(const Duration(seconds: 1), () {
+            connectWithRetry(); // 重新连接
+          });
+        },
         // 其他配置...
       ),
     )..activate();
+  }
+
+  void onDisconnected() {
+    print('Disconnected from WebSocket');
   }
 
   void onConnectCallback(StompFrame frame) {
@@ -35,7 +45,7 @@ class ChatService {
       callback: (StompFrame frame) {
         if (frame.body != null) {
           // 处理收到的消息
-          print(frame.body);
+          print('Recv reply: ${frame.body}');
         }
       },
     );

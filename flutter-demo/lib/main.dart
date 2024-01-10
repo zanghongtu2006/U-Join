@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    chatService.connect();
+    chatService.connectWithRetry();
     return MaterialApp(
       title: 'IM App',
       theme: ThemeData(
