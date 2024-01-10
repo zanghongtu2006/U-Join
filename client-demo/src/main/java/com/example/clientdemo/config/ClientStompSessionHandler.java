@@ -95,8 +95,8 @@ public class ClientStompSessionHandler extends StompSessionHandlerAdapter {
     private void reconnect() {
         String token = "eyJraWQiOiI1MmJhYzUyNy1hMGNhLTRlMDAtYWJjZi0xNmRmZTFkMzI2ZTMiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3MDQ5NTU1NjAsImlhdCI6MTcwNDg2OTE2MCwiaXNzIjoiaHR0cHM6Ly9zc28uemFuZ2hvbmd0dS5jb20vcmVhbG1zL2FpIiwiYXVkIjoidnVlIiwic3ViIjoiMWRmNGM2OWYtMTM4Yy00N2RhLWJkMzMtODgxZGM3NjI3MGJkIiwidHlwIjoiQmVhcmVyIiwianRpIjoiODA5ZmJjODUtNzgzYS00NGYwLTg5NTktNzg1ZTk0YzZlNTA2Iiwic2Vzc2lvbl9zdGF0ZSI6IjE5NWIzZDFjLTI2YWMtNDg3YS05MjJiLTc1MjVhYmVlNDJlZSIsInNjb3BlIjoiZW1haWwgcHJvZmlsZSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwicHJlZmVycmVkX3VzZXJuYW1lIjoiemhhbmdzYW4iLCJhbGxvd2VkLW9yaWdpbnMiOlsiKiJdfQ.KTmtnwSkQ7aeQMc2PvPsdqT5TD5ia5ZM7n0ReKUSUDo";
         StompHeaders stompHeaders = new StompHeaders();
-        stompHeaders.setLogin("foo"); // 设置用户名
-        stompHeaders.setPasscode("bar"); // 设置密码
+//        stompHeaders.setLogin("foo"); // 设置用户名
+//        stompHeaders.setPasscode("bar"); // 设置密码
         WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
         headers.setBearerAuth(token);
         // 重连逻辑

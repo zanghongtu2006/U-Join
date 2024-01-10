@@ -66,7 +66,7 @@ public class TokenServiceImpl implements ITokenService {
                 .claim(TokenConfig.CLAIM_SESSION_STATE, sessionId)
                 .claim(TokenConfig.CLAIM_SCOPE, "email profile")
                 .claim(TokenConfig.CLAIM_EMAIL_VERIFIED, false)
-                .claim(TokenConfig.CLAIM_PREFERRED_USER_NAME, user.getName())
+                .claim(TokenConfig.CLAIM_PREFERRED_USER_NAME, user.getUsername())
                 .claim(TokenConfig.CLAIM_ALLOWD_ORIGINS, allowdOrigins)
                 .signWith(SignatureAlgorithm.HS256, tokenConfig.getAppSecret()).compact();
     }

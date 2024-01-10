@@ -41,7 +41,7 @@ public class LoginController {
     public TokenResultDTO login(@RequestBody TokenRequestDTO tokenRequestDTO) {
         User user = new User();
         user.setId(UUID.randomUUID().toString());
-        user.setName("zhangsan");
+        user.setUsername("zhangsan");
         String sessionID = UUID.randomUUID().toString();
         TokenDTO tokenDTO = tokenService.generateToken(user, sessionID);
         TokenResultDTO loginResultDTO = new TokenResultDTO();
@@ -63,7 +63,7 @@ public class LoginController {
         User user = JSON.parseObject(redisService.get(RedisKeyUtils.getSessionUserName(sessionId)).toString(), User.class);
         TokenDTO tokenDTO = tokenService.generateToken(user, sessionId);
         TokenResultDTO loginResultDTO = new TokenResultDTO();
-        loginResultDTO.setUsername(user.getName());
+        loginResultDTO.setUsername(user.getUsername());
         loginResultDTO.setUserId(user.getId());
         loginResultDTO.setAccessToken(tokenDTO.getAccess_token());
         loginResultDTO.setRefreshToken(tokenDTO.getRefresh_token());
