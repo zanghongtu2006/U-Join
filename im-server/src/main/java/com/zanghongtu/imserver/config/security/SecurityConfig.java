@@ -1,5 +1,6 @@
 package com.zanghongtu.imserver.config.security;
 
+import com.zanghongtu.imserver.service.ITokenService;
 import com.zanghongtu.imserver.service.impl.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -11,18 +12,22 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
     @Autowired
     private CustomUserDetailsService userDetailsService;
+    @Autowired
+    private ITokenService tokenService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((authz) -> authz
                         .requestMatchers("/chatserver/**").permitAll()
-                        .anyRequest().permitAll()
+                        .requestMatchers("/token/**").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasicConfigurer -> httpBasicConfigurer
                         .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
@@ -31,7 +36,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .userDetailsService(userDetailsService)
         ;  // 使用自定义UserDetailsService
-
+        http.addFilterAfter(new JwtAuthenticationFilter(tokenService, userDetailsService), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
