@@ -1,5 +1,6 @@
 package com.zanghongtu.imserver.config;
 
+import com.zanghongtu.imserver.model.User;
 import com.zanghongtu.imserver.service.ITokenService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,11 @@ public class CustomHttpSessionHandshakeInterceptor implements HandshakeIntercept
             if (CollectionUtils.isEmpty(map) || !map.containsKey(Constants.USER_ID)) {
                 return false;
             }
+            User user = new User();
+            user.setId(map.get(Constants.USER_ID));
             attributes.putAll(map);
+            attributes.put("user", user);
+            log.info(attributes.keySet().toString());
             return true;
         }
         return false;
