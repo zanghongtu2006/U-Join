@@ -1,7 +1,7 @@
 package com.zanghongtu.imserver.controller;
 
 import com.zanghongtu.imserver.model.User;
-import com.zanghongtu.imserver.repository.UserRepository;
+import com.zanghongtu.imserver.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +15,11 @@ import java.util.List;
 @RequestMapping("users")
 public class UserController {
     @Autowired
-    private UserRepository userRepository;
+    private IUserService userService;
 
     @GetMapping(path = "")
     public List<User> list() {
         log.info("in user list");
-        return userRepository.findAll();
+        return userService.findAll();
     }
 }

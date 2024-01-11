@@ -56,7 +56,7 @@ public enum BaseErrorCode {
 
     INVITE_CODE_NOT_EXIST(500, "邀请码不存在或已过期"),
 
-    MOBILE_ALREADY_EXSISTS(500, "用户手机号已经注册"),
+    ALREADY_EXSISTS(500, "资源已存在"),
 
     RESOURCE_NOT_FOUND(500, "资源查询失败"),
 
