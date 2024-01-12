@@ -20,7 +20,7 @@ public enum BaseErrorCode {
     /**
      * 用户名密码不正确
      */
-    LOGIN_FAILED(500, "无效的用户名或密码"),
+    LOGIN_FAILED(500, "User is not exsist or password doesn't match"),
 
     /**
      * 未知异常

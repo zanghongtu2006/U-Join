@@ -15,7 +15,7 @@ public class ReqInfo {
 
     private Optional<String> userName;
 
-    private Optional<Long> userId;
+    private Optional<String> userId;
 
     public ReqInfo() {
         this.requestId = UUID.randomUUID().toString();

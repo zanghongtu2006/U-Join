@@ -86,10 +86,10 @@ public class BaseServiceImpl<T, ID> implements IBaseService<T, ID> {
         try {
             Method setCreateTime = entity.getClass().getMethod("setCreateTime", Date.class);
             Method setUpdateTime = entity.getClass().getMethod("setUpdateTime", Date.class);
-            Method setCreator = entity.getClass().getMethod("setCreator", Long.class);
-            Method setUpdator = entity.getClass().getMethod("setUpdator", Long.class);
+            Method setCreator = entity.getClass().getMethod("setCreatedBy", String.class);
+            Method setUpdator = entity.getClass().getMethod("setUpdatedBy", String.class);
             Date date = new Date();
-            Long uid = null;
+            String uid = null;
             if (ReqInfoOperator.get().getUserId().isPresent()) {
                 uid = ReqInfoOperator.get().getUserId().get();
             }
@@ -107,9 +107,9 @@ public class BaseServiceImpl<T, ID> implements IBaseService<T, ID> {
     public <S extends T> S update(S entity) {
         try {
             Method setUpdateTime = entity.getClass().getMethod("setUpdateTime", Date.class);
-            Method setUpdator = entity.getClass().getMethod("setUpdator", Long.class);
+            Method setUpdator = entity.getClass().getMethod("setUpdatedBy", String.class);
             Date date = new Date();
-            Long uid = null;
+            String uid = null;
             if (ReqInfoOperator.get().getUserId().isPresent()) {
                 uid = ReqInfoOperator.get().getUserId().get();
             }
@@ -178,7 +178,7 @@ public class BaseServiceImpl<T, ID> implements IBaseService<T, ID> {
     @NotNull
     @Override
     public T getById(@NotNull ID id) {
-        return repository.getOne(id);
+        return repository.getReferenceById(id);
     }
 
     @Override

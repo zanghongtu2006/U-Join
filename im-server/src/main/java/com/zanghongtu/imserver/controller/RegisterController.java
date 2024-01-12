@@ -1,9 +1,14 @@
 package com.zanghongtu.imserver.controller;
 
 import com.zanghongtu.imserver.controller.dto.chat.UserDTO;
+import com.zanghongtu.imserver.controller.dto.user.UserInfoDTO;
+import com.zanghongtu.imserver.controller.dto.user.UserRegisterDTO;
 import com.zanghongtu.imserver.exception.AlreadyExistsException;
 import com.zanghongtu.imserver.model.User;
+import com.zanghongtu.imserver.model.UserInfo;
+import com.zanghongtu.imserver.service.IUserInfoService;
 import com.zanghongtu.imserver.service.IUserService;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,14 +21,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("register")
 public class RegisterController extends BaseController {
-    @Autowired
-    private IUserService userService;
+
+    private final IUserService userService;
+
+    private final IUserInfoService userInfoService;
+
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    public RegisterController(IUserService userService,
+                              IUserInfoService userInfoService,
+                              PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.userInfoService = userInfoService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
-    @PostMapping("/register")
-    public UserDTO registerUser(@RequestBody UserDTO userDto) {
+    @PostMapping("")
+    @Transactional(rollbackOn = Exception.class)
+    public UserInfoDTO registerUser(@RequestBody UserRegisterDTO userDto) {
         if (userService.existsByUsername(userDto.getUsername())) {
             throw new AlreadyExistsException();
         }
@@ -32,6 +48,9 @@ public class RegisterController extends BaseController {
         newUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
         // 保存用户
         userService.save(newUser);
-        return model2dto(newUser, UserDTO.class);
+        UserInfo userInfo = new UserInfo();
+        userInfo.setAuthUserId(newUser.getId());
+        userInfoService.insert(userInfo);
+        return model2dto(userInfo, UserInfoDTO.class);
     }
 }

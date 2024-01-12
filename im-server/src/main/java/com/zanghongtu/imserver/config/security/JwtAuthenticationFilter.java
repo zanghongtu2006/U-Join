@@ -1,9 +1,10 @@
 package com.zanghongtu.imserver.config.security;
 
 import com.zanghongtu.imserver.config.Constants;
-import com.zanghongtu.imserver.model.User;
 import com.zanghongtu.imserver.service.ITokenService;
-import com.zanghongtu.imserver.service.impl.CustomUserDetailsService;
+import com.zanghongtu.imserver.service.IUserService;
+import com.zanghongtu.imserver.threadlocal.ReqInfo;
+import com.zanghongtu.imserver.threadlocal.ReqInfoOperator;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,19 +17,18 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.net.http.HttpRequest;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Optional;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private ITokenService tokenService; // 你的TokenService
 
-    private CustomUserDetailsService userDetailsService;
+    private IUserService userService;
 
     // 构造器注入TokenService
-    public JwtAuthenticationFilter(ITokenService tokenService,CustomUserDetailsService userDetailsService) {
+    public JwtAuthenticationFilter(ITokenService tokenService, IUserService userService) {
         this.tokenService = tokenService;
-        this.userDetailsService = userDetailsService;
+        this.userService = userService;
     }
 
     @Override
@@ -39,17 +39,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String token = extractToken(request);
                 if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     Map<String, String> map = tokenService.parseAccessToken(token);
-//                    UserDetails userDetails = userDetailsService.getById(map.get(Constants.USER_ID));
-                    User user = new User();
-                    user.setId(UUID.randomUUID().toString());
-                    user.setUsername("zhangsan");
-                    UserDetails userDetails = user;
-
+                    UserDetails userDetails = userService.getById(map.get(Constants.USER_ID));
                     if (userDetails != null) {
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                        ReqInfo reqInfo = new ReqInfo();
+                        reqInfo.setUserId(Optional.of(map.get(Constants.USER_ID)));
+                        ReqInfoOperator.set(reqInfo);
                     }
                 }
             } catch (AuthenticationException e) {

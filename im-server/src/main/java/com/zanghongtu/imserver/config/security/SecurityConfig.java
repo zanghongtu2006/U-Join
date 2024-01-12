@@ -1,14 +1,13 @@
 package com.zanghongtu.imserver.config.security;
 
 import com.zanghongtu.imserver.service.ITokenService;
+import com.zanghongtu.imserver.service.IUserService;
 import com.zanghongtu.imserver.service.impl.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,9 +16,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 public class SecurityConfig {
     @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private IUserService userService;
     @Autowired
     private ITokenService tokenService;
+
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -27,6 +29,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authz) -> authz
                         .requestMatchers("/chatserver/**").permitAll()
                         .requestMatchers("/token/**").permitAll()
+                        .requestMatchers("/register/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(httpBasicConfigurer -> httpBasicConfigurer
@@ -36,7 +39,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .userDetailsService(userDetailsService)
         ;  // 使用自定义UserDetailsService
-        http.addFilterAfter(new JwtAuthenticationFilter(tokenService, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAfter(new JwtAuthenticationFilter(tokenService, userService), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
