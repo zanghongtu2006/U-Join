@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/login/privacy_before_login.dart';
 
@@ -20,18 +19,6 @@ class LoginPage extends StatelessWidget {
                   alignment: Alignment.topCenter),
             ),
             height: MediaQuery.of(context).size.height * 0.55, // 将高度设置为屏幕高度的50%
-          ),
-          const SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  // 其他部分不变
-                  // Add your TextFields for username and password here
-                ],
-              ),
-            ),
           ),
           Align(
             alignment: Alignment.bottomCenter, // 将按钮放在图片的下方
@@ -81,12 +68,48 @@ class LoginPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 48.0),
+                      const SizedBox(height: 24.0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 80.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: <Widget>[
+                            SizedBox(
+                              width: 30,
+                              height: 30,
+                              child: FloatingActionButton(
+                                onPressed: () {
+                                  // 处理注册登录
+                                },
+                                // 替换成你的注册 logo
+                                backgroundColor: Colors.transparent,
+                                elevation: 0,
+                                child: Image.asset(
+                                    'assets/login_phone_icon.png'), // QQ logo 的背景色
+                              ),
+                            ),
+                            SizedBox(
+                              width: 30,
+                              height: 30,
+                              child: FloatingActionButton(
+                                onPressed: () {
+                                  // 处理 QQ 登录
+                                },
+                                // 替换成你的 QQ logo
+                                backgroundColor: Colors.transparent,
+                                elevation: 0,
+                                child: Image.asset(
+                                    'assets/login_qq_icon.png'), // QQ logo 的背景色
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ])),
           )
         ],
       ),
-      bottomSheet:  Container(
+      bottomSheet: Container(
         height: 40,
         child: const Align(
           // 使用 Align 来水平居中显示 PrivacyBeforeLoginWidget
