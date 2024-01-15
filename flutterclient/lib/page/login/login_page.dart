@@ -1,0 +1,104 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutterclient/page/login/privacy_before_login.dart';
+
+import '../../util/web_page.dart';
+
+class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: <Widget>[
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                  image: AssetImage("assets/login_top_bg.png"), // 替换成你的背景图片
+                  fit: BoxFit.fill,
+                  alignment: Alignment.topCenter),
+            ),
+            height: MediaQuery.of(context).size.height * 0.55, // 将高度设置为屏幕高度的50%
+          ),
+          const SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  // 其他部分不变
+                  // Add your TextFields for username and password here
+                ],
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter, // 将按钮放在图片的下方
+            child: Padding(
+                padding: const EdgeInsets.only(top: 256.0), // 调整按钮与图片的距离
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Handle phone number login
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(
+                                double.infinity, 48), // width and height
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Icon(Icons.phone_android),
+                              SizedBox(width: 8.0),
+                              Text('手机号码自动登录'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24.0),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Handle WeChat login
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 48),
+                            backgroundColor: Colors.green,
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              Icon(Icons.wechat),
+                              SizedBox(width: 8.0),
+                              Text('微信登录'),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 48.0),
+                    ])),
+          )
+        ],
+      ),
+      bottomSheet:  Container(
+        height: 40,
+        child: const Align(
+          // 使用 Align 来水平居中显示 PrivacyBeforeLoginWidget
+          alignment: Alignment.center,
+          child: PrivacyBeforeLoginWidget(),
+        ),
+      ),
+    );
+  }
+
+  void _openWebPage(BuildContext context, String url) {
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => WebPage(url: url)));
+  }
+}
