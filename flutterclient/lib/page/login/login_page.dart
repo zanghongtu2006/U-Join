@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutterclient/page/login/privacy_before_login.dart';
 
 import '../../util/web_page.dart';
+import 'common_login.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -78,8 +79,12 @@ class LoginPage extends StatelessWidget {
                               width: 30,
                               height: 30,
                               child: FloatingActionButton(
+                                heroTag: "hero-to-phone-login",
                                 onPressed: () {
-                                  // 处理注册登录
+                                  // 当点击时，导航到 CommonLogin 页面
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (context) => const CommonLoginPage(),
+                                  ));
                                 },
                                 // 替换成你的注册 logo
                                 backgroundColor: Colors.transparent,
@@ -92,6 +97,7 @@ class LoginPage extends StatelessWidget {
                               width: 30,
                               height: 30,
                               child: FloatingActionButton(
+                                heroTag: "hero-to-qq-login",
                                 onPressed: () {
                                   // 处理 QQ 登录
                                 },
