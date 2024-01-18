@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../button/logo_button.dart';
+import '../login/login_page.dart';
+
 class UsersTabView extends StatelessWidget {
   const UsersTabView({Key? key});
 
@@ -16,7 +19,7 @@ class UsersTabView extends StatelessWidget {
                     color: Colors.lightBlue, width: 0.2), // 设置边框颜色和宽度
               ),
               elevation: 0,
-              margin: const EdgeInsets.all(8), // 设置卡片之间的间距
+              margin: const EdgeInsets.all(10), // 设置卡片之间的间距
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 8, 8, 3),
                 child: Column(
@@ -42,22 +45,48 @@ class UsersTabView extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 8), // 添加间距
-                    Text(
-                      '标签 $index, 标签 ${index + 1}',
-                      style: const TextStyle(color: Colors.orange), // 橙色字体
-                    ),
                     Row(
                       children: <Widget>[
-                        Text('地点 $index'),
-                        Spacer(),
-                        IconButton(
-                          icon: const Icon(Icons.message),
-                          onPressed: () {
-                            // 消息页面逻辑
-                          },
+                        const SizedBox(width: 4),
+                        Text(
+                          '标签 $index, 标签 ${index + 1}',
+                          style: const TextStyle(color: Colors.orange), // 橙色字体
                         ),
                       ],
-                    ), // 地点
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: <Widget>[
+                        Row(
+                          children: <Widget>[
+                            const SizedBox(width: 4),
+                            Image.asset(
+                              'assets/icon/location.png',
+                              height: 16, // 图标的高度
+                              width: 16, // 图标的宽度
+                            ),
+                            const SizedBox(width: 8), // 图标与文本之间的间距
+                            Text('地点 $index',
+                                style: const TextStyle(color: Colors.grey)),
+                          ],
+                        ),
+                        const Spacer(),
+                        LogoButton(
+                          logoPath: 'assets/icon/love_chat_icon.png',
+                          borderColor: Colors.lightBlue,
+                          text: '搭讪',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LoginPage()), // TargetPage是要跳转到的页面
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 8)
+                      ],
+                    ),
+                    const SizedBox(height: 8)// 地点
                   ],
                 ),
               ),

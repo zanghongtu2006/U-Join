@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'filter_button.dart';
+import 'filter_sheet.dart';
 import 'user_tab.dart';
 
 class UserListPage extends StatefulWidget {
@@ -26,6 +27,23 @@ class _UserListPageState extends State<UserListPage>
     super.dispose();
   }
 
+  // 添加一个方法来显示底部模态弹窗
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(20), // 设置圆角样式
+          child: Container(
+            color: Colors.white, // 设置背景颜色为白色
+            padding: const EdgeInsets.all(16),
+            child: FilterSheet(), // 此处是你的 FilterSheet 组件
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -38,10 +56,7 @@ class _UserListPageState extends State<UserListPage>
               // 处理文本按钮的点击事件
               print('选中了: ${index}');
             },
-            onFilter: () {
-              // 处理筛选图标按钮的点击事件
-              print('点击了筛选按钮');
-            },
+            onFilter: _showFilterSheet,
           ), // 使用自定义的筛选按钮组件
           Expanded(
             child: TabBarView(
