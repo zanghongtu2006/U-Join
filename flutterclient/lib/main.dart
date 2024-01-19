@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterclient/page/chat_page/chat_page.dart';
 
 import 'page/home_page/home_page.dart';
 import 'page/social_page/social_page.dart';
@@ -34,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     const HomePage(),
     SocialPage(),
     SocialPage(),
-    SocialPage(),
+    ChatPage(),
     SocialPage(),
   ];
 
