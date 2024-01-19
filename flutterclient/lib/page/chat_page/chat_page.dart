@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'chat_list.dart';
+import 'contact_list_navigate.dart';
+
 // 假设的聊天模型
 class Chat {
   final String avatarUrl;
@@ -15,43 +18,100 @@ class Chat {
   });
 }
 
-// 聊天页面
 class ChatPage extends StatefulWidget {
   @override
   _ChatPageState createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
-  // 模拟聊天数据
-  final List<Chat> chats = [
-    // ... 在这里填充您的模拟数据
+  int _selectedIndex = 0; // 当前选中的索引
+
+  final List<Widget> _pages = [
+    ChatListWidget(), // 消息列表Widget
+    ContactListNavigateWidget(), // 通讯录列表Widget
   ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('聊天列表'),
-        actions: [
-          // 在线状态指示器
-          // ... 添加动作和其他控件
-        ],
-      ),
-      body: ListView.builder(
-        itemCount: chats.length,
-        itemBuilder: (context, index) {
-          final chat = chats[index];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(chat.avatarUrl),
+      body: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            // 从顶部开始
+            left: 0,
+            right: 0,
+            height: MediaQuery.of(context).size.height * 0.20,
+            // 设置高度为屏幕高度的20%
+            child: Container(
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/bg_top.png"),
+                  fit: BoxFit.fill,
+                  alignment: Alignment.topCenter,
+                ),
+              ),
             ),
-            title: Text(chat.name),
-            subtitle: Text(chat.message),
-            trailing: chat.isOnline
-                ? Icon(Icons.circle, color: Colors.green)
-                : Icon(Icons.circle, color: Colors.grey),
-          );
-        },
+          ),
+          Column(
+            children: <Widget>[
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    const SizedBox(width: 8),
+                    // 消息按钮
+                    TextButton(
+                      onPressed: () {
+                        setState(() => _selectedIndex = 0);
+                      },
+                      style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 0.0), // 减少按钮内边距
+                          minimumSize: const Size(0, 0)
+                      ),
+                      child: Text(
+                        '消息',
+                        style: TextStyle(
+                            color: _selectedIndex == 0 ? Colors.blue : Colors.black,
+                            fontSize: 16
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8), // 按钮之间的间距
+                    // 通讯录按钮
+                    TextButton(
+                      onPressed: () {
+                        setState(() => _selectedIndex = 1);
+                      },
+                      style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 0.0), // 减少按钮内边距
+                          minimumSize: const Size(0, 0)
+                      ),
+                      child: Text(
+                        '通讯录',
+                        style: TextStyle(
+                            color: _selectedIndex == 1 ? Colors.blue : Colors.black,
+                            fontSize: 16
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: _pages.elementAt(_selectedIndex), // 显示选中的页面
+              ),
+            ],
+          )
+        ],
       ),
     );
   }

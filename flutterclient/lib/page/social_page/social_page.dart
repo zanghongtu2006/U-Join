@@ -14,7 +14,7 @@ class _SocialPageState extends State<SocialPage> {
     return Scaffold(
       body: Column(
         children: <Widget>[
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
           FilterButtons(
             // 使用 FilterButtons 组件
             onSelected: (index) {
