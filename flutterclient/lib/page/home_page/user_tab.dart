@@ -27,9 +27,9 @@ class UsersTabView extends StatelessWidget {
                   children: <Widget>[
                     Row(
                       children: <Widget>[
-                        const CircleAvatar(
-                          backgroundImage:
-                              AssetImage('assets/login_qq_icon.png'),
+                         CircleAvatar(
+                          backgroundImage: index==0 ? AssetImage('assets/login_qq_icon.png'):
+                              AssetImage('assets/girls_voice/girl_voice_$index.png'),
                           radius: 32, // 头像的大小
                         ),
                         const SizedBox(width: 16),

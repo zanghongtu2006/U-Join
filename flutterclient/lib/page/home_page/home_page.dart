@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/login/login_page.dart';
 
@@ -85,29 +86,50 @@ class _HomePageState extends State<HomePage>
             children: <Widget>[
               Expanded(
                 flex: 0,
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  shrinkWrap: true,
-                  children: const <Widget>[
-                    FeatureButton(imagePath: 'assets/home_marray_icon.png'),
-                    FeatureButton(imagePath: 'assets/home_marray_icon.png'),
-                    Column(
-                      children: <Widget>[
-                        Expanded(
-                          child: FeatureButton(
-                            imagePath: 'assets/home_test_icon.png',
-                            isSmall: true,
-                          ),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: GridView.count(
+                    crossAxisCount: 3,
+                    shrinkWrap: true,
+                    children: <Widget>[
+                      CarouselSlider(
+                        options: CarouselOptions(
+                          autoPlay: true, // 自动播放
+                          enlargeCenterPage: false, // 禁用放大显示
+                          viewportFraction: 0.9, // 图片占轮播容器的宽度比例
                         ),
-                        Expanded(
-                          child: FeatureButton(
-                            imagePath: 'assets/home_voice_icon.png',
-                            isSmall: true,
+                        items: const [
+                          Image(image:AssetImage('assets/girls_voice/girl_voice_1.png')),
+                          Image(image:AssetImage('assets/girls_voice/girl_voice_2.png')),
+                          Image(image:AssetImage('assets/girls_voice/girl_voice_3.png')),
+                          Image(image:AssetImage('assets/girls_voice/girl_voice_4.png')),
+                          Image(image:AssetImage('assets/girls_voice/girl_voice_5.png')),
+                          Image(image:AssetImage('assets/girls_voice/girl_voice_6.png')),
+                          Image(image:AssetImage('assets/girls_voice/girl_voice_7.png')),
+                          Image(image:AssetImage('assets/girls_voice/girl_voice_8.png')),
+                          Image(image:AssetImage('assets/girls_voice/girl_voice_9.png')),
+                          // 添加更多轮播项
+                        ],
+                      ),
+                      const FeatureButton(imagePath: 'assets/home_marray_icon.png'),
+                      const Column(
+                        children: <Widget>[
+                          Expanded(
+                            child: FeatureButton(
+                              imagePath: 'assets/home_test_icon.png',
+                              isSmall: true,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          Expanded(
+                            child: FeatureButton(
+                              imagePath: 'assets/home_voice_icon.png',
+                              isSmall: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const Expanded(
@@ -115,20 +137,6 @@ class _HomePageState extends State<HomePage>
               ),
             ],
           ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 0,
-        onTap: (int index) {
-          // 更新状态以切换页面
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '首页'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: '发现'),
-          BottomNavigationBarItem(icon: Icon(Icons.people), label: '交友'),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: '消息'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '我的'),
         ],
       ),
     );
