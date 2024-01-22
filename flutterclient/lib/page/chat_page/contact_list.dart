@@ -5,7 +5,7 @@ import 'contact_bottom_sheet_content.dart';
 class ContactListPage extends StatelessWidget {
   final String filter;
 
-  ContactListPage({Key? key, required this.filter}) : super(key: key);
+  const ContactListPage({Key? key, required this.filter}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -72,15 +72,16 @@ class ContactListItem extends StatelessWidget {
           ),
           title: Row(
             children: [
-              Text('$nickname ', style: TextStyle()),
+              Text('$nickname ', style: const TextStyle()),
             ],
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(' $age · $height ',
-                  style: TextStyle(color: Colors.grey, fontSize: 12)),
-              Text(bio, style: TextStyle(fontSize: 12)),
+                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              const SizedBox(height: 4),
+              Text(bio, style: const TextStyle(fontSize: 12)),
             ],
           ),
           trailing: IconButton(
