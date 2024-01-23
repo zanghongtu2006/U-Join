@@ -41,7 +41,7 @@ class ChatListItem extends StatelessWidget {
             children: [
               Text(userName),
               const SizedBox(width: 4),
-              Image.asset('assets/icon/icon_woman.png', width: 12)
+              Image.asset('assets/icon/yhc_nv.png', width: 10)
             ],
           ),
           const Spacer(),

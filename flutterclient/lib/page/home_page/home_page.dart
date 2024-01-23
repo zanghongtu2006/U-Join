@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage>
     return Scaffold(
       appBar: AppBar(
         title: const Text('首页'),
-        backgroundColor: Colors.white, // 设置 AppBar 背景为透明
+        backgroundColor: Colors.transparent, // 设置 AppBar 背景为透明
         elevation: 0,
         actions: <Widget>[
           LogoButton(

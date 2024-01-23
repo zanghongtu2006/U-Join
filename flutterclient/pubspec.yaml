@@ -42,6 +42,7 @@ dependencies:
   webview_flutter_android: ^3.13.2
   dio: ^5.4.0
   carousel_slider: ^4.2.1
+  oktoast: ^3.4.0
 
 dev_dependencies:
   flutter_test:
@@ -100,3 +101,4 @@ flutter:
     - assets/icon/
     - assets/boys_voice/
     - assets/girls_voice/
+    - assets/mine/

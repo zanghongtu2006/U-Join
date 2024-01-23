@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/chat_page/chat_page.dart';
+import 'package:oktoast/oktoast.dart';
 
 import 'page/home_page/home_page.dart';
+import 'page/mine_page/mine_page.dart';
 import 'page/social_page/social_page.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
-  runApp(const MyApp());
+  runApp(const OKToast(child: MaterialApp(home: MyApp())));
 }
 
 class MyApp extends StatelessWidget {
@@ -36,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     SocialPage(),
     SocialPage(),
     ChatPage(),
-    SocialPage(),
+    MinePage(),
   ];
 
   @override
