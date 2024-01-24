@@ -57,13 +57,17 @@ class _HomeScreenState extends State<HomeScreen> {
             _currentIndex = index;
           });
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: _currentIndex == 0
+                ? Image.asset('assets/icon/home_2.png',width: 24,)  // 当选中时显示的图片
+                : Image.asset('assets/icon/home.png',width: 24,), // 未选中时显示的图片
             label: '首页',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
+            icon: _currentIndex == 1
+                ? Image.asset('assets/icon/discover_2.png',width: 24,)  // 当选中时显示的图片
+                : Image.asset('assets/icon/discover.png',width: 24,),
             label: '发现',
           ),
           BottomNavigationBarItem(
@@ -71,11 +75,15 @@ class _HomeScreenState extends State<HomeScreen> {
             label: '交友',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.message),
+            icon: _currentIndex == 3
+                ? Image.asset('assets/icon/chat_2.png',width: 24,)  // 当选中时显示的图片
+                : Image.asset('assets/icon/chat.png',width: 24,),
             label: '消息',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: _currentIndex == 4
+                ? Image.asset('assets/icon/person_2.png',width: 24,)  // 当选中时显示的图片
+                : Image.asset('assets/icon/person.png',width: 24,),
             label: '我的',
           ),
         ],

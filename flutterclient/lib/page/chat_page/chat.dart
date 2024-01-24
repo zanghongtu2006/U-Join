@@ -8,6 +8,7 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   final TextEditingController _textController = TextEditingController();
   bool _isRecording = false;
+  bool _isPanelExpanded = false; // 用于控制面板展开/收缩的状态
 
   // 假设的聊天记录
   final List<Map<String, dynamic>> _messages = [
@@ -30,7 +31,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child:Text("Alice")), // 对方的名字或群聊名
+        title: const Center(child: Text("Alice")), // 对方的名字或群聊名
       ),
       body: Column(
         children: <Widget>[
@@ -40,54 +41,58 @@ class _ChatPageState extends State<ChatPage> {
               itemBuilder: (context, index) {
                 final message = _messages[index];
                 final isMe = message['isMe'];
-                return Row(
-                  mainAxisAlignment:
-                      isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-                  children: <Widget>[
-                    if (!isMe) ...[
-                      CircleAvatar(child: Text(message['sender'][0])), // 头像
-                      SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(message['sender']), // 显示发送者名字
-                          Container(
-                            margin: EdgeInsets.all(5.0),
-                            padding: EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(10),
+                return Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                  child: Row(
+                    mainAxisAlignment:
+                        isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                    children: <Widget>[
+                      if (!isMe) ...[
+                        CircleAvatar(child: Text(message['sender'][0])), // 头像
+                        SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(message['sender']), // 显示发送者名字
+                            Container(
+                              margin: EdgeInsets.all(5.0),
+                              padding: EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(message['text']), // 聊天内容
                             ),
-                            child: Text(message['text']), // 聊天内容
-                          ),
-                        ],
-                      ),
-                    ] else ...[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: <Widget>[
-                          Text(message['sender']), // 显示发送者名字
-                          Container(
-                            margin: EdgeInsets.all(5.0),
-                            padding: EdgeInsets.all(10.0),
-                            decoration: BoxDecoration(
-                              color: Colors.blue[300],
-                              borderRadius: BorderRadius.circular(10),
+                          ],
+                        ),
+                      ] else ...[
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: <Widget>[
+                            Text(message['sender']), // 显示发送者名字
+                            Container(
+                              margin: EdgeInsets.all(5.0),
+                              padding: EdgeInsets.all(10.0),
+                              decoration: BoxDecoration(
+                                color: Colors.blue[300],
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(message['text'],
+                                  style:
+                                      TextStyle(color: Colors.white)), // 聊天内容
                             ),
-                            child: Text(message['text'],
-                                style: TextStyle(color: Colors.white)), // 聊天内容
-                          ),
-                        ],
-                      ),
-                      SizedBox(width: 10),
-                      CircleAvatar(child: Text(message['sender'][0])), // 头像
+                          ],
+                        ),
+                        SizedBox(width: 10),
+                        CircleAvatar(child: Text(message['sender'][0])), // 头像
+                      ],
                     ],
-                  ],
+                  ),
                 );
               },
             ),
           ),
-          Divider(height: 1.0),
           Container(
             child: _buildTextInput(),
           ),
@@ -98,15 +103,14 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildTextInput() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
       color: Colors.transparent, // 设置整行的底色
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch, // 这会使子控件填满横向空间
         children: [
           Row(
             children: <Widget>[
-              _buildRecordIconButton(
-                  'assets/chat/voice.png', _isRecording, () {
+              _buildRecordIconButton('assets/chat/voice.png', _isRecording, () {
                 setState(() {
                   _isRecording = !_isRecording;
                 });
@@ -148,6 +152,10 @@ class _ChatPageState extends State<ChatPage> {
               }),
               _buildIconButton('assets/chat/more.png', () {
                 // 打开更多模态框
+                setState(() {
+                  _isPanelExpanded = !_isPanelExpanded; // 切换面板的展开/收缩状态
+                });
+                ;
               }),
             ],
           ),
@@ -176,6 +184,112 @@ class _ChatPageState extends State<ChatPage> {
               })),
             ],
           ),
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            height: _isPanelExpanded ? 200 : 0, // 根据_isPanelExpanded调整高度
+            color: Colors.white, // 或者任何您喜欢的颜色
+            child: GridView.count(
+              crossAxisCount: 4,
+              children: [
+                InkWell(
+                  onTap: () {},
+                  child: Column(
+                    children: [
+                      Padding(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          child: Image.asset('assets/chat/mock_cp.png',
+                              width: 60)),
+                      Text(
+                        "假装情侣",
+                        style: TextStyle(fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+                InkWell(
+                  onTap: () {},
+                  child: Column(
+                    children: [
+                      Padding(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          child: Image.asset('assets/chat/icon_cp.png',
+                              width: 60)),
+                      Text(
+                        "CP",
+                        style: TextStyle(fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+                InkWell(
+                  onTap: () {},
+                  child: Column(
+                    children: [
+                      Padding(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          child: Image.asset('assets/chat/icon_qinmi.png',
+                              width: 60)),
+                      Text(
+                        "亲密关系",
+                        style: TextStyle(fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+                InkWell(
+                  onTap: () {},
+                  child: Column(
+                    children: [
+                      Padding(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          child:
+                              Image.asset('assets/chat/shaizi.png', width: 60)),
+                      Text(
+                        "掷骰子",
+                        style: TextStyle(fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+                InkWell(
+                  onTap: () {},
+                  child: Column(
+                    children: [
+                      Padding(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          child: Image.asset('assets/chat/caiquan.png',
+                              width: 60)),
+                      Text(
+                        "猜拳",
+                        style: TextStyle(fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+                InkWell(
+                  onTap: () {},
+                  child: Column(
+                    children: [
+                      Padding(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          child: Image.asset('assets/chat/zhenxinhua.png',
+                              width: 60)),
+                      Text(
+                        "真心话",
+                        style: TextStyle(fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -190,7 +304,7 @@ class _ChatPageState extends State<ChatPage> {
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Image.asset(imagePath,
-                  width: 24, height: 24), // 如果是String，使用Image
+              width: 24, height: 24), // 如果是String，使用Image
         ),
       ),
     );
@@ -208,7 +322,7 @@ class _ChatPageState extends State<ChatPage> {
           child: isRecording
               ? const Icon(Icons.keyboard) // 如果是IconData，使用Icon
               : Image.asset(iconOrImagePath,
-              width: 24, height: 24), // 如果是String，使用Image
+                  width: 24, height: 24), // 如果是String，使用Image
         ),
       ),
     );
