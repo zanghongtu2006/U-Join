@@ -9,11 +9,12 @@ import 'page/social_page/social_page.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() {
-  runApp(const OKToast(child: MaterialApp(home: MyApp())));
+  runApp( OKToast(child: MaterialApp(home: MyApp())));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +32,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  late final List<AnimationController> _controllers;
+  late final List<Animation<double>> _animations;
 
   // 底部导航栏中的各个页面
   final List<Widget> _pages = [
@@ -59,7 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         items: [
           BottomNavigationBarItem(
-            icon: _currentIndex == 0
+            icon:
+            _currentIndex == 0
                 ? Image.asset('assets/icon/home_2.png',width: 24,)  // 当选中时显示的图片
                 : Image.asset('assets/icon/home.png',width: 24,), // 未选中时显示的图片
             label: '首页',

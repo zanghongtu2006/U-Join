@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../chat_page/contact_list.dart';
+
 class SocialStatusTabView extends StatefulWidget {
   @override
   _SocialStatusTabViewState createState() => _SocialStatusTabViewState();
@@ -33,7 +35,11 @@ class _SocialStatusTabViewState extends State<SocialStatusTabView> {
 
   Widget _buildTabItem(int index, String title, int number) {
     return InkWell(
-      onTap: () => setState(() => _currentIndex = index),
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => ContactListPage(filter: title),
+        ));
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         alignment: Alignment.center, // 确保文本居中

@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/login/login_page.dart';
+import 'package:flutterclient/page/mine_page/sub_page/task_page.dart';
 
 import '../button/logo_button.dart';
 import 'user_list_page.dart';
@@ -43,7 +44,7 @@ class _HomePageState extends State<HomePage>
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => LoginPage()), // TargetPage是要跳转到的页面
+                    builder: (context) => TaskPage()), // TargetPage是要跳转到的页面
               );
             },
           ),

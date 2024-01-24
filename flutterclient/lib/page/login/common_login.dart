@@ -1,4 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutterclient/page/home_page/home_page.dart';
+import 'package:oktoast/oktoast.dart';
+
+import '../../util/api_service.dart';
 import 'register_page.dart';
 
 class CommonLoginPage extends StatefulWidget {
@@ -10,6 +16,15 @@ class CommonLoginPage extends StatefulWidget {
 
 class _CommonLoginPageState extends State<CommonLoginPage> {
   bool _passwordVisible = false;
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +58,7 @@ class _CommonLoginPageState extends State<CommonLoginPage> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30.0),
                       child: TextField(
+                        controller: _usernameController,
                         decoration: InputDecoration(
                           labelText: "用户名",
                           border: OutlineInputBorder(
@@ -59,6 +75,7 @@ class _CommonLoginPageState extends State<CommonLoginPage> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30.0),
                       child: TextField(
+                        controller: _passwordController,
                         obscureText: !_passwordVisible,
                         decoration: InputDecoration(
                           labelText: "密码",
@@ -87,8 +104,37 @@ class _CommonLoginPageState extends State<CommonLoginPage> {
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: () {
-                      // 在这里添加注册逻辑
+                    onPressed: () async {
+                      String username = _usernameController.text;
+                      String password = _passwordController.text;
+                      print(username);
+                      print(password);
+                      // 调用登录API
+                      var response = await ApiService().post(
+                        '/token/login',
+                        {'username': username, 'password': password},
+                      );
+                      print(response.statusCode);
+                      if (response.statusCode == 200) {
+                        var result = json.decode(response.body);
+                        print(result['data']);
+                        // 存储token
+                        await ApiService().setToken(result['data']['access-token'], result['data']['refresh-token']);
+                        // 跳转到首页或其他页面
+                        Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => HomePage(),
+                        ));
+                      } else {
+                        // 显示错误信息
+                        showToast(
+                            "用户名或密码错误",
+                            duration: const Duration(seconds: 2),
+                            position: ToastPosition.bottom,
+                            backgroundColor: Colors.black12,
+                            textPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                            textStyle: const TextStyle(color: Colors.black)
+                        );
+                      }
                     },
                     child: const Text("登录"),
                   ),
