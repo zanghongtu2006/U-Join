@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/button/logo_button.dart';
+import 'package:flutterclient/page/chat_page/chat.dart';
 
 import '../login/login_page.dart';
 
@@ -114,7 +115,7 @@ class PostCard extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => LoginPage()), // TargetPage是要跳转到的页面
+                            builder: (context) => ChatPage()), // TargetPage是要跳转到的页面
                       );
                     },
                   ),
