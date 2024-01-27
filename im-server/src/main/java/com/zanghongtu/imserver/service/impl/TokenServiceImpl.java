@@ -3,7 +3,7 @@ package com.zanghongtu.imserver.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.zanghongtu.imserver.config.TokenConfig;
 import com.zanghongtu.imserver.controller.dto.login.TokenDTO;
-import com.zanghongtu.imserver.model.User;
+import com.zanghongtu.imserver.model.UserInfo;
 import com.zanghongtu.imserver.service.IRedisService;
 import com.zanghongtu.imserver.service.ITokenService;
 import com.zanghongtu.imserver.util.JwtUtil;
@@ -24,7 +24,7 @@ public class TokenServiceImpl implements ITokenService {
     private TokenConfig tokenConfig;
 
     @Override
-    public TokenDTO generateToken(User user, String sessionId) {
+    public TokenDTO generateToken(UserInfo user, String sessionId) {
         Date issuedAt = new Date();
         Date accessExpiration = new Date(issuedAt.getTime() + tokenConfig.getAccessTokenExpireTime());
         Date refreshExpiration = new Date(issuedAt.getTime() + tokenConfig.getRefreshTokenExpireTime() * 86400 * 24);
@@ -41,13 +41,13 @@ public class TokenServiceImpl implements ITokenService {
 
 
     @Override
-    public String generateAccessToken(User user, String sessionId) {
+    public String generateAccessToken(UserInfo user, String sessionId) {
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + tokenConfig.getAccessTokenExpireTime());
         return generateAccessToken(user, sessionId, issuedAt, expiration);
     }
 
-    private String generateAccessToken(User user, String sessionId, Date issuedAt, Date expiration) {
+    private String generateAccessToken(UserInfo user, String sessionId, Date issuedAt, Date expiration) {
         Map<String, Object> headers = new HashMap<>();
         headers.put("typ", "JWT");
         headers.put("kid", UUID.randomUUID().toString());
@@ -66,14 +66,14 @@ public class TokenServiceImpl implements ITokenService {
                 .claim(TokenConfig.CLAIM_SESSION_STATE, sessionId)
                 .claim(TokenConfig.CLAIM_SCOPE, "email profile")
                 .claim(TokenConfig.CLAIM_EMAIL_VERIFIED, false)
-                .claim(TokenConfig.CLAIM_PREFERRED_USER_NAME, user.getUsername())
+                .claim(TokenConfig.CLAIM_PREFERRED_USER_NAME, user.getFullName())
                 .claim(TokenConfig.CLAIM_ALLOWD_ORIGINS, allowdOrigins)
                 .signWith(SignatureAlgorithm.HS256, tokenConfig.getAppSecret()).compact();
     }
 
 
     @Override
-    public String generateRefreshToken(User user, String sessionId) {
+    public String generateRefreshToken(UserInfo user, String sessionId) {
         Date issuedAt = new Date();
         Date expiration = new Date(issuedAt.getTime() + tokenConfig.getRefreshTokenExpireTime());
         return generateRefreshToken(user, sessionId, issuedAt, expiration);
@@ -81,7 +81,7 @@ public class TokenServiceImpl implements ITokenService {
 
 
     @Override
-    public String generateRefreshToken(User user, String sessionId, Date issuedAt, Date expiration) {
+    public String generateRefreshToken(UserInfo user, String sessionId, Date issuedAt, Date expiration) {
         Map<String, Object> headers = new HashMap<>();
         headers.put("typ", "JWT");
         headers.put("kid", UUID.randomUUID().toString());

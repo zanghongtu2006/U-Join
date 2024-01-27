@@ -1,15 +1,36 @@
 import 'package:flutter/material.dart';
 
 // 个人信息部分
-class UserInformationSection extends StatelessWidget {
+class UserInformationSection extends StatefulWidget {
+  final String id;
+  final String nickname;
+  final String avatar;
+  final int level;
+
+  const UserInformationSection(
+      {Key? key,
+        required this.id,
+        required this.nickname,
+        required this.avatar,
+        required this.level})
+      : super(key: key);
+
+  @override
+  _UserInformationSectionState createState() => _UserInformationSectionState();
+}
+class _UserInformationSectionState extends State<UserInformationSection> {
   @override
   Widget build(BuildContext context) {
+    print("avatar");
+    print(widget.avatar);
     return Container(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       child: Row(
         children: <Widget>[
-          const CircleAvatar(
-            backgroundImage: NetworkImage('https://placekitten.com/200/200'),
+          CircleAvatar(
+            backgroundImage: widget.avatar.isNotEmpty
+                ? NetworkImage(widget.avatar)
+                : const AssetImage("assets/login_qq_icon.png") as ImageProvider,
             // 示例图片地址
             radius: 26,
           ),
@@ -17,18 +38,18 @@ class UserInformationSection extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Row(
+                Row(
                   children: [
-                    SizedBox(width: 8),
-                    Text('用户名', style: TextStyle(fontSize: 16))
+                    const SizedBox(width: 8),
+                    Text(widget.nickname, style: const TextStyle(fontSize: 16))
                   ],
                 ),
                 Row(
                   children: [
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Image.asset('assets/mine/icon_id.png', height: 12),
                     SizedBox(width: 4),
-                    const Text('123456',
+                    Text(widget.id,
                         style: TextStyle(color: Colors.grey, fontSize: 12)),
                     SizedBox(width: 4),
                     Image.asset('assets/icon/copy.png', width: 10)

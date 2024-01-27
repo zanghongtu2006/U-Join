@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -44,6 +46,7 @@ dependencies:
   carousel_slider: ^4.2.1
   oktoast: ^3.4.0
   flutter_secure_storage: ^9.0.0
+  numberpicker: ^2.1.2
 
 dev_dependencies:
   flutter_test:

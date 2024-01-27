@@ -5,8 +5,11 @@ import com.zanghongtu.imserver.repository.UserInfoRepository;
 import com.zanghongtu.imserver.service.IUserInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.support.JpaRepositoryImplementation;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -18,4 +21,10 @@ public class UserInfoServiceImpl extends BaseServiceImpl<UserInfo, String> imple
         super(repository);
     }
 
+    @Override
+    public Optional<UserInfo> getByAuthId(String id) {
+        UserInfo example = new UserInfo();
+        example.setAuthUserId(id);
+        return findOne(Example.of(example));
+    }
 }

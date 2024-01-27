@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutterclient/page/home_page/home_page.dart';
+import 'package:flutterclient/main.dart';
 import 'package:oktoast/oktoast.dart';
 
 import '../../util/api_service.dart';
@@ -107,33 +107,30 @@ class _CommonLoginPageState extends State<CommonLoginPage> {
                     onPressed: () async {
                       String username = _usernameController.text;
                       String password = _passwordController.text;
-                      print(username);
-                      print(password);
                       // 调用登录API
                       var response = await ApiService().post(
                         '/token/login',
                         {'username': username, 'password': password},
                       );
-                      print(response.statusCode);
                       if (response.statusCode == 200) {
                         var result = json.decode(response.body);
                         print(result['data']);
                         // 存储token
-                        await ApiService().setToken(result['data']['access-token'], result['data']['refresh-token']);
+                        await ApiService().setToken(
+                            result['data']['access-token'],
+                            result['data']['refresh-token']);
                         // 跳转到首页或其他页面
                         Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => HomePage(),
+                          builder: (context) => HomeScreen(),
                         ));
                       } else {
                         // 显示错误信息
-                        showToast(
-                            "用户名或密码错误",
+                        showToast("用户名或密码错误",
                             duration: const Duration(seconds: 2),
                             position: ToastPosition.bottom,
                             backgroundColor: Colors.black12,
-                            textPadding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                            textStyle: const TextStyle(color: Colors.black)
-                        );
+                            textPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                            textStyle: const TextStyle(color: Colors.black));
                       }
                     },
                     child: const Text("登录"),

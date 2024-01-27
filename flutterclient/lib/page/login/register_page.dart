@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterclient/page/login/profile/user_info.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -85,7 +86,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () {
-                      // 在这里添加注册逻辑
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserInformationPage(),
+                        ),
+                      );
                     },
                     child: const Text("注册"),
                   ),

@@ -1,7 +1,9 @@
 package com.zanghongtu.imserver.config.security;
 
 import com.zanghongtu.imserver.config.Constants;
+import com.zanghongtu.imserver.model.UserInfo;
 import com.zanghongtu.imserver.service.ITokenService;
+import com.zanghongtu.imserver.service.IUserInfoService;
 import com.zanghongtu.imserver.service.IUserService;
 import com.zanghongtu.imserver.threadlocal.ReqInfo;
 import com.zanghongtu.imserver.threadlocal.ReqInfoOperator;
@@ -25,30 +27,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private IUserService userService;
 
+    private IUserInfoService userInfoService;
+
     // 构造器注入TokenService
-    public JwtAuthenticationFilter(ITokenService tokenService, IUserService userService) {
+    public JwtAuthenticationFilter(ITokenService tokenService, IUserService userService, IUserInfoService userInfoService) {
         this.tokenService = tokenService;
         this.userService = userService;
+        this.userInfoService = userInfoService;
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        if (!request.getRequestURI().startsWith("/chatserver")) {
+        String requestUri = request.getRequestURI();
+        if (!requestUri.startsWith("/chatserver") && !requestUri.endsWith(".html") && !requestUri.endsWith(".ico")) {
             try {
                 String token = extractToken(request);
                 if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     Map<String, String> map = tokenService.parseAccessToken(token);
-                    UserDetails userDetails = userService.getById(map.get(Constants.USER_ID));
+                    UserInfo userInfo = userInfoService.getById(map.get(Constants.USER_ID));
+                    if (userInfo != null) {
+                        ReqInfo reqInfo = new ReqInfo();
+                        reqInfo.setUserId(Optional.of(map.get(Constants.USER_ID)));
+                        ReqInfoOperator.set(reqInfo);
+                    }
+                    UserDetails userDetails = userService.getById(userInfo.getAuthUserId());
                     if (userDetails != null) {
                         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
                         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                        ReqInfo reqInfo = new ReqInfo();
-                        reqInfo.setUserId(Optional.of(map.get(Constants.USER_ID)));
-                        ReqInfoOperator.set(reqInfo);
                     }
                 }
             } catch (AuthenticationException e) {

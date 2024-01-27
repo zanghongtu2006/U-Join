@@ -12,8 +12,10 @@ import com.zanghongtu.imserver.exception.CheckException;
 import com.zanghongtu.imserver.exception.login.LoginFailedException;
 import com.zanghongtu.imserver.exception.login.RefreshTokenExpiredException;
 import com.zanghongtu.imserver.model.User;
+import com.zanghongtu.imserver.model.UserInfo;
 import com.zanghongtu.imserver.service.IRedisService;
 import com.zanghongtu.imserver.service.ITokenService;
+import com.zanghongtu.imserver.service.IUserInfoService;
 import com.zanghongtu.imserver.service.IUserService;
 import com.zanghongtu.imserver.util.RedisKeyUtils;
 import io.micrometer.common.util.StringUtils;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -41,15 +44,19 @@ public class LoginController {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final IUserInfoService userInfoService;
+
     @Autowired
     public LoginController(ITokenService tokenService,
                            IRedisService redisService,
                            IUserService userService,
-                           PasswordEncoder passwordEncoder) {
+                           PasswordEncoder passwordEncoder,
+                           IUserInfoService userInfoService) {
         this.tokenService = tokenService;
         this.redisService = redisService;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.userInfoService = userInfoService;
     }
 
     @PostMapping(path = "login")
@@ -62,11 +69,14 @@ public class LoginController {
         if (!passwordEncoder.matches(tokenRequestDTO.getPassword(), user.getPassword())) {
             throw new LoginFailedException();
         }
+        Optional<UserInfo> userInfo = userInfoService.getByAuthId(user.getId());
+        if (userInfo.isEmpty()) {
+            throw new LoginFailedException();
+        }
         String sessionID = UUID.randomUUID().toString();
-        TokenDTO tokenDTO = tokenService.generateToken(user, sessionID);
+        TokenDTO tokenDTO = tokenService.generateToken(userInfo.get(), sessionID);
         TokenResultDTO loginResultDTO = new TokenResultDTO();
-        loginResultDTO.setUsername(user.getUsername());
-        loginResultDTO.setUserId(user.getId());
+        loginResultDTO.setUserId(userInfo.get().getId());
         loginResultDTO.setAccessToken(tokenDTO.getAccess_token());
         loginResultDTO.setRefreshToken(tokenDTO.getRefresh_token());
         return loginResultDTO;
@@ -80,10 +90,10 @@ public class LoginController {
             throw new RefreshTokenExpiredException();
         }
         String sessionId = jwt.getClaim(TokenConfig.CLAIM_SESSION_STATE).asString();
-        User user = JSON.parseObject(redisService.get(RedisKeyUtils.getSessionUserName(sessionId)).toString(), User.class);
+        UserInfo user = JSON.parseObject(redisService.get(RedisKeyUtils.getSessionUserName(sessionId)).toString(), UserInfo.class);
         TokenDTO tokenDTO = tokenService.generateToken(user, sessionId);
         TokenResultDTO loginResultDTO = new TokenResultDTO();
-        loginResultDTO.setUsername(user.getUsername());
+        loginResultDTO.setUsername(user.getFullName());
         loginResultDTO.setUserId(user.getId());
         loginResultDTO.setAccessToken(tokenDTO.getAccess_token());
         loginResultDTO.setRefreshToken(tokenDTO.getRefresh_token());

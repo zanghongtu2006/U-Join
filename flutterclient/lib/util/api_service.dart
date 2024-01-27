@@ -7,7 +7,8 @@ import '../main.dart';
 
 class ApiService {
   final String baseUrl;
-  final storage = FlutterSecureStorage();
+  final storage = const FlutterSecureStorage();
+  final timeout = 10;
 
   ApiService({this.baseUrl = 'http://192.168.168.10:8080'});
 
@@ -31,49 +32,63 @@ class ApiService {
       headers: {
         'Authorization': 'Bearer $token',
       },
-    );
+    ).timeout(Duration(seconds: timeout), onTimeout: () {
+      return http.Response(json.encode({'code': 408, 'msg': 'TIMEOUT'}), 408);
+    });
 
     return _handleResponse(response);
   }
 
   Future<http.Response> post(String endpoint, dynamic data) async {
     var token = await _getToken();
-    final response = await http.post(
+    final response = await http
+        .post(
       Uri.parse('$baseUrl$endpoint'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
       body: json.encode(data),
-    );
+    )
+        .timeout(Duration(seconds: timeout), onTimeout: () {
+      return http.Response(json.encode({'code': 408, 'msg': 'TIMEOUT'}), 408);
+    });
 
     return _handleResponse(response);
   }
 
   Future<http.Response> put(String endpoint, dynamic data) async {
     var token = await _getToken();
-    final response = await http.put(
+    final response = await http
+        .put(
       Uri.parse('$baseUrl$endpoint'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
       body: json.encode(data),
-    );
+    )
+        .timeout(Duration(seconds: timeout), onTimeout: () {
+      return http.Response(json.encode({'code': 408, 'msg': 'TIMEOUT'}), 408);
+    });
 
     return _handleResponse(response);
   }
 
   Future<http.Response> delete(String endpoint, dynamic data) async {
     var token = await _getToken();
-    final response = await http.delete(
+    final response = await http
+        .delete(
       Uri.parse('$baseUrl$endpoint'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
       body: json.encode(data),
-    );
+    )
+        .timeout(Duration(seconds: timeout), onTimeout: () {
+      return http.Response(json.encode({'code': 408, 'msg': 'TIMEOUT'}), 408);
+    });
 
     return _handleResponse(response);
   }

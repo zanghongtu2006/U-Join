@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutterclient/page/chat_page/chat_page.dart';
+import 'package:flutterclient/page/login/login_page.dart';
 import 'package:oktoast/oktoast.dart';
 
 import 'page/home_page/home_page.dart';
@@ -14,12 +16,25 @@ void main() {
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});
-  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      supportedLocales: const [
+        // Locale('en', 'US'), // English
+        Locale('zh', 'CN'), // Chinese
+        // ... other locales the app supports
+      ],
+      localizationsDelegates: const [
+        // ... app-specific localization delegate[s] here
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate, // For Cupertino widgets
+      ],
       navigatorKey: navigatorKey,
+      routes: {
+        '/login': (context) => LoginPage(),
+      },
       home: HomeScreen(),
     );
   }
@@ -41,7 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
     SocialPage(),
     SocialPage(),
     ChatPage(),
-    MinePage(),
+    const MinePage(),
   ];
 
   @override
