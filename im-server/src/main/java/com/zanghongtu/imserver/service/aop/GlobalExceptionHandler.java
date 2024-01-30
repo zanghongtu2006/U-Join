@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(BaseException.class)
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> customException(Exception e) {
         ReqInfo reqInfo = ReqInfoOperator.get();
         if (reqInfo == null) {
@@ -31,10 +31,10 @@ public class GlobalExceptionHandler {
         BaseDTO<?> errorResponse;
         if (e instanceof BusinessException) {
             errorResponse = new BaseDTO<>(BaseErrorCode.FAILED);
-            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(errorResponse, HttpStatus.OK);
         } else if (e instanceof CheckException) {
             errorResponse = new BaseDTO<>(BaseErrorCode.CHECK_ERROR);
-            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(errorResponse, HttpStatus.OK);
         } else if (e instanceof PermitException) {
             errorResponse = new BaseDTO<>(BaseErrorCode.USER_NOT_PERMITTED);
             return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
             return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
         } else if (e instanceof BaseException) {
             errorResponse = new BaseDTO<>(((BaseException) e).getErrorCode(), e.getMessage());
-            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(errorResponse, HttpStatus.OK);
         } else {
             //TODO 未知的异常，应该格外注意，可以发送邮件通知等
             errorResponse = new BaseDTO<>(BaseErrorCode.ERROR);

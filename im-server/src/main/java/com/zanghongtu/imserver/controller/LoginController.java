@@ -93,7 +93,6 @@ public class LoginController {
         UserInfo user = JSON.parseObject(redisService.get(RedisKeyUtils.getSessionUserName(sessionId)).toString(), UserInfo.class);
         TokenDTO tokenDTO = tokenService.generateToken(user, sessionId);
         TokenResultDTO loginResultDTO = new TokenResultDTO();
-        loginResultDTO.setUsername(user.getFullName());
         loginResultDTO.setUserId(user.getId());
         loginResultDTO.setAccessToken(tokenDTO.getAccess_token());
         loginResultDTO.setRefreshToken(tokenDTO.getRefresh_token());

@@ -60,6 +60,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     }
                 }
             } catch (AuthenticationException e) {
+                logger.error("AuthenticationException", e);
                 SecurityContextHolder.clearContext();
                 // 如果Token无效，可在这里处理异常，比如返回401状态码
             }

@@ -22,7 +22,6 @@ public class UserController extends BaseController {
 
     @GetMapping(path = "")
     public PageResponse<UserInfoDTO> search(UserInfo userInfo, PageRequest pageRequest) {
-        log.info("in user list");
         Page<UserInfo> pageResult = userInfoService.search(Example.of(userInfo), pageRequest.getPageIndex(), pageRequest.getPageSize());
         return model2dto(pageResult, UserInfoDTO.class);
     }

@@ -11,7 +11,5 @@ public class TokenResultDTO {
     @JsonProperty("refresh-token")
     private String refreshToken;
 
-    private String username;
-
     private String userId;
 }

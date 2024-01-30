@@ -18,6 +18,13 @@ spring:
     host: 127.0.0.1
     password:
 
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
 #springdoc:
 #  swagger-ui:
 #    path: /swagger-ui.html
