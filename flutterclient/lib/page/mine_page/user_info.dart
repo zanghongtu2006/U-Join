@@ -21,8 +21,6 @@ class UserInformationSection extends StatefulWidget {
 class _UserInformationSectionState extends State<UserInformationSection> {
   @override
   Widget build(BuildContext context) {
-    print("avatar");
-    print(widget.avatar);
     return Container(
       padding: const EdgeInsets.all(20),
       child: Row(

@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:oktoast/oktoast.dart';
 
 import '../main.dart';
 
@@ -25,10 +27,17 @@ class ApiService {
     await storage.deleteAll();
   }
 
-  Future<http.Response> get(String endpoint) async {
+  Future<http.Response> get(String endpoint,
+      {Map<String, dynamic>? params}) async {
     var token = await _getToken();
+    // 构建带参数的 URL
+    var uri = Uri.parse('$baseUrl$endpoint');
+    // 如果传递了参数，则将参数添加到 URL 中
+    if (params != null && params.isNotEmpty) {
+      uri = uri.replace(queryParameters: params);
+    }
     final response = await http.get(
-      Uri.parse('$baseUrl$endpoint'),
+      uri,
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -41,16 +50,15 @@ class ApiService {
 
   Future<http.Response> post(String endpoint, dynamic data) async {
     var token = await _getToken();
-    final response = await http
-        .post(
+    print(json.encode(data));
+    final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
       body: json.encode(data),
-    )
-        .timeout(Duration(seconds: timeout), onTimeout: () {
+    ).timeout(Duration(seconds: timeout), onTimeout: () {
       return http.Response(json.encode({'code': 408, 'msg': 'TIMEOUT'}), 408);
     });
 
@@ -98,6 +106,23 @@ class ApiService {
       _clearToken();
       // 这里需要添加跳转到登录界面的代码
       navigatorKey.currentState?.pushReplacementNamed('/login');
+    } else if (response.statusCode == 200) {
+      var result = json.decode(response.body);
+      if (result['code'] != 0) {
+        showToast(result['msg'],
+            duration: const Duration(seconds: 2),
+            position: ToastPosition.bottom,
+            backgroundColor: Colors.black12,
+            textPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            textStyle: const TextStyle(color: Colors.black));
+      }
+    } else {
+      showToast('网络连接异常',
+          duration: const Duration(seconds: 2),
+          position: ToastPosition.bottom,
+          backgroundColor: Colors.black12,
+          textPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+          textStyle: const TextStyle(color: Colors.black));
     }
     return response;
   }

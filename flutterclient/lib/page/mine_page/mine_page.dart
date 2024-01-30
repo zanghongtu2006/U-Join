@@ -30,6 +30,7 @@ class _MinePageState extends State<MinePage>
   int fansCount = 0;
   int focusCount = 0;
   int visitorsCount = 0;
+  String status = "";
 
   @override
   void initState() {
@@ -54,7 +55,7 @@ class _MinePageState extends State<MinePage>
           avatar = data['avatar'] ?? '';
           level = data['level'] ?? ''; // 确保数据中有 'level' 字段，并且它是一个整数
           receivedStatus = List<int>.from(data['taskStatus']);
-
+          status = data['status'] ?? 'REGISTERD';
           fansCount = data['fansCount'] ?? 0;
           focusCount = data['focusCount'] ?? 0;
           visitorsCount = data['visitorsCount'] ?? 0;

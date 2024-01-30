@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/login/profile/personality_tag.dart';
+import 'package:flutterclient/util/api_service.dart';
+import 'package:oktoast/oktoast.dart';
 
 import '../../../util/date_picker.dart';
 import '../../../util/number_picker.dart';
@@ -103,14 +107,9 @@ class _UserInformationPageState extends State<UserInformationPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   const SizedBox(height: 20),
-                  SizedBox(
+                  const SizedBox(
                     width: 240,
-                    child: CustomStepProgress(
-                      totalSteps: 4,
-                      currentStep: 1,
-                      activeColor: Colors.blue,
-                      inactiveColor: Colors.grey,
-                    ),
+                    child: CustomStepProgress(totalSteps: 4, currentStep: 1, activeColor: Colors.indigoAccent, inactiveColor: Colors.grey),
                   ),
                   const SizedBox(height: 10),
                   const Text('完善个人资料',
@@ -134,22 +133,22 @@ class _UserInformationPageState extends State<UserInformationPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       GestureDetector(
-                        onTap: () => setState(() => _gender = 'male'),
+                        onTap: () => setState(() => _gender = 'MALE'),
                         child: Container(
                           padding: EdgeInsets.all(10),
                           child: Image.asset(
-                            _gender == 'male' ? _maleIconColor : _maleIconGrey,
+                            _gender == 'MALE' ? _maleIconColor : _maleIconGrey,
                             width: 80,
                           ),
                         ),
                       ),
                       const SizedBox(width: 32),
                       GestureDetector(
-                        onTap: () => setState(() => _gender = 'female'),
+                        onTap: () => setState(() => _gender = 'FEMALE'),
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           child: Image.asset(
-                              _gender == 'female'
+                              _gender == 'FEMALE'
                                   ? _femaleIconColor
                                   : _femaleIconGrey,
                               width: 80),
@@ -250,13 +249,45 @@ class _UserInformationPageState extends State<UserInformationPage> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PersonalityTagPage(),
-                ),
+            onPressed: () async {
+              final navigator = Navigator.of(context);
+              if (nickname.isEmpty ) {
+                // 显示一个提示信息
+                showToast('昵称不能为空',
+                    duration: const Duration(seconds: 2),
+                    position: ToastPosition.bottom,
+                    backgroundColor: Colors.black12,
+                    textPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    textStyle: const TextStyle(color: Colors.black));
+                return;
+              }
+              if (_gender.isEmpty ) {
+                // 显示一个提示信息
+                showToast('性别不能为空',
+                    duration: const Duration(seconds: 2),
+                    position: ToastPosition.bottom,
+                    backgroundColor: Colors.black12,
+                    textPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    textStyle: const TextStyle(color: Colors.black));
+                return;
+              }
+              var response = await ApiService().post(
+                '/mine/profile',
+                {'nickName': nickname, 'birthDate': selectedDate.millisecondsSinceEpoch, 'gender':_gender,
+                'height':height, 'weight':weight},
               );
+              print(response.statusCode);
+              if (response.statusCode == 200) {
+                var data = json.decode(response.body);
+                print(data);
+                if (data['code'] == 0) {
+                  navigator.push(
+                    MaterialPageRoute(
+                      builder: (context) => PersonalityTagPage(),
+                    ),
+                  );
+                }
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.indigoAccent, // 按钮背景色
