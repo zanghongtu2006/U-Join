@@ -20,10 +20,25 @@ class ApiService {
   }
 
   Future<String?> _getToken() async {
-    return await storage.read(key: 'access_token') ?? '';
+    return getToken();
+  }
+
+  Future<String?> getToken() async {
+    try {
+      String? token = await storage.read(key: 'access_token');
+      print("Retrieved token: $token"); // 调试信息
+      return token ?? '';
+    } catch (e) {
+      print("Error getting token: $e"); // 错误处理
+      return '';
+    }
   }
 
   Future<void> _clearToken() async {
+    await storage.deleteAll();
+  }
+
+  Future<void> clearToken() async {
     await storage.deleteAll();
   }
 

@@ -33,7 +33,7 @@ public class CustomHttpSessionHandshakeInterceptor implements HandshakeIntercept
                 return false;
             }
             String token = authorizations.get(0).replaceFirst("Bearer", "").replaceFirst("bearer", "");
-            Map<String, String> map = tokenService.parseAccessToken(token);
+                Map<String, String> map = tokenService.parseAccessToken(token);
             if (CollectionUtils.isEmpty(map) || !map.containsKey(Constants.USER_ID)) {
                 return false;
             }

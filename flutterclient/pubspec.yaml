@@ -47,6 +47,9 @@ dependencies:
   oktoast: ^3.4.0
   flutter_secure_storage: ^9.0.0
   numberpicker: ^2.1.2
+  stomp_dart_client: ^1.0.1
+  web_socket_channel: ^2.4.0
+  flutter_slidable: ^3.0.1
 
 dev_dependencies:
   flutter_test:

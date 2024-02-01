@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutterclient/main.dart';
 import 'package:flutterclient/page/login/profile/user_info.dart';
 import 'package:oktoast/oktoast.dart';
 
 import '../../util/api_service.dart';
+import '../home_screen.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);

@@ -113,7 +113,7 @@ class PostCard extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => ChatPage()), // TargetPage是要跳转到的页面
+                            builder: (context) => ChatPage(userId: "hello",nickName: 'hello',avatar: "avatar",)), // TargetPage是要跳转到的页面
                       );
                     },
                   ),

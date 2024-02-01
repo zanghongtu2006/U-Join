@@ -51,7 +51,7 @@ class _MinePageState extends State<MinePage>
         print(data);
         setState(() {
           id = data['id'] ?? ''; // 确保数据中有 'id' 字段
-          nickname = data['nickname'] ?? '';
+          nickname = data['nickName'] ?? '';
           avatar = data['avatar'] ?? '';
           level = data['level'] ?? ''; // 确保数据中有 'level' 字段，并且它是一个整数
           receivedStatus = List<int>.from(data['taskStatus']);

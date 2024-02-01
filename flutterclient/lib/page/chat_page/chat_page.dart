@@ -18,24 +18,26 @@ class Chat {
   });
 }
 
-class ChatPage extends StatefulWidget {
+class ChatListPage extends StatefulWidget {
+  const ChatListPage({super.key});
+
   @override
-  _ChatPageState createState() => _ChatPageState();
+  _ChatListPageState createState() => _ChatListPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
-  int _selectedIndex = 0; // 当前选中的索引
+class _ChatListPageState extends State<ChatListPage> {
+  late int _selectedIndex = 0; // 当前选中的索引
 
   final List<Widget> _pages = [
     ChatListWidget(), // 消息列表Widget
     ContactListNavigateWidget(), // 通讯录列表Widget
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  // void _onItemTapped(int index) {
+  //   setState(() {
+  //     _selectedIndex = index;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {

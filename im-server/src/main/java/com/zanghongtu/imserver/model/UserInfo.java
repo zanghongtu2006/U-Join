@@ -2,6 +2,8 @@ package com.zanghongtu.imserver.model;
 
 import com.zanghongtu.imserver.controller.dto.user.Gender;
 import com.zanghongtu.imserver.controller.dto.user.UserStatus;
+import com.zanghongtu.imserver.controller.dto.user.UserType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -20,6 +22,7 @@ public class UserInfo extends BaseEntity {
 
     private String nickName;
 
+    @Column(name = "avatar", columnDefinition = "VARCHAR(255) DEFAULT 'https://placekitten.com/200/200'")
     private String avatar;
 
     private String mobile;
@@ -38,9 +41,11 @@ public class UserInfo extends BaseEntity {
 
     private String personality;
 
-    String sexual;
+    private UserType type;
 
-    String relationType;
+    private String sexual;
+
+    private String relationType;
 
     private String authUserId;
 

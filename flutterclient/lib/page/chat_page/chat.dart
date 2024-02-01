@@ -1,6 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutterclient/util/ws_service.dart';
 
 class ChatPage extends StatefulWidget {
+  final String userId;
+  final String avatar;
+  final String nickName;
+
+  const ChatPage(
+      {Key? key,
+      required this.userId,
+      required this.avatar,
+      required this.nickName})
+      : super(key: key);
+
   @override
   _ChatPageState createState() => _ChatPageState();
 }
@@ -27,11 +39,22 @@ class _ChatPageState extends State<ChatPage> {
     // 更多消息...
   ];
 
+  void _onSendButtonPressed() {
+    String destination = '/app/chat'; // 您想要发送到的目的地
+    String message = _textController.text; // 从文本输入控件获取的消息文本
+    ChatService().sendMessage(destination, message);
+    _textController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text("Alice")), // 对方的名字或群聊名
+        title: Center(
+            child: Text(
+          widget.nickName,
+          style: TextStyle(fontSize: 18),
+        )), // 对方的名字或群聊名
       ),
       body: Column(
         children: <Widget>[
@@ -49,12 +72,12 @@ class _ChatPageState extends State<ChatPage> {
                         isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
                     children: <Widget>[
                       if (!isMe) ...[
-                        CircleAvatar(child: Text(message['sender'][0])), // 头像
+                        CircleAvatar(
+                            backgroundImage: NetworkImage(widget.avatar)), // 头像
                         SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            Text(message['sender']), // 显示发送者名字
                             Container(
                               margin: EdgeInsets.all(5.0),
                               padding: EdgeInsets.all(10.0),
@@ -70,7 +93,6 @@ class _ChatPageState extends State<ChatPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: <Widget>[
-                            Text(message['sender']), // 显示发送者名字
                             Container(
                               margin: EdgeInsets.all(5.0),
                               padding: EdgeInsets.all(10.0),
@@ -142,9 +164,12 @@ class _ChatPageState extends State<ChatPage> {
                           filled: true,
                           fillColor: Colors.white,
                           // 设置输入框的填充色为白色
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8), // 根据需要调整内边距
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // 根据需要调整内边距
                         ),
+                        onSubmitted: (value) {
+                          // 当键盘上的发送按钮被点击时，调用发送消息的逻辑
+                          _onSendButtonPressed();
+                        },
                       ),
               ),
               _buildIconButton('assets/chat/emoji.png', () {
