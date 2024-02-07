@@ -71,11 +71,11 @@ class _PersonalityTagPageState extends State<PersonalityTagPage> {
   }
 
   bool validateSelections() {
-    return iamTags.where((tag) => selectedTags[tag] == true).length >= 1 &&
+    return iamTags.where((tag) => selectedTags[tag] == true).isNotEmpty &&
         iamTags.where((tag) => selectedTags[tag] == true).length <= 5 &&
-        ilikeTags.where((tag) => selectedTags[tag] == true).length >= 1 &&
+        ilikeTags.where((tag) => selectedTags[tag] == true).isNotEmpty &&
         ilikeTags.where((tag) => selectedTags[tag] == true).length <= 5 &&
-        irefuseTags.where((tag) => selectedTags[tag] == true).length >= 1 &&
+        irefuseTags.where((tag) => selectedTags[tag] == true).isNotEmpty &&
         irefuseTags.where((tag) => selectedTags[tag] == true).length <= 5;
   }
 

@@ -51,10 +51,10 @@ class _ChatListWidgetState extends State<ChatListWidget> {
               ],
             ),
             child: ChatListItem(
-              userId: contact['id'],
+              conversationId: contact['conversationId'],
               avatarUrl: contact['avatar'],
               nickName: contact['nickName'],
-              lastMessage: 'hello',
+              lastMessage: contact['lastMessage'],
               isOnline: true,
             ),
           );
@@ -103,7 +103,7 @@ class _ChatListWidgetState extends State<ChatListWidget> {
 
   Future<void> _fetchContacts() async {
     try {
-      var response = await ApiService().get("/users/contacts");
+      var response = await ApiService().get("/conversations/latest");
       if (response.statusCode == 200) {
         var data = json.decode(response.body)['data'];
         print(data);

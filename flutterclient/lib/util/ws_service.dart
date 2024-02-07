@@ -18,7 +18,7 @@ class ChatService {
     // 连接成功的逻辑
     _stompClient?.send(
       destination: '/app/hello',
-      body: jsonEncode({'name':'message from flutter'}),
+      body: jsonEncode({'name': 'message from flutter'}),
     );
     _stompClient?.subscribe(
       destination: '/user/topic/greetings',
@@ -42,9 +42,18 @@ class ChatService {
   void _onDisconnected(StompFrame frame) {
     print('Disconnected from WebSocket: ${frame.body}');
     // 断开后，延时重连
-    Future.delayed(Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 1), () {
       _connectWithRetry();
     });
+  }
+
+  void _onWebSocketError(dynamic error) {
+    print('WebSocketError from WebSocket: $error');
+
+  }
+
+  void _onStompError(StompFrame frame) {
+    print('Disconnected from WebSocket: ${frame.body}');
   }
 
   void sendMessage(String destination, String message) {
@@ -55,6 +64,7 @@ class ChatService {
   }
 
   void initialize() async {
+    print("---------------------initialize--------------------");
     _connectWithRetry();
   }
 
@@ -62,12 +72,12 @@ class ChatService {
     var token = await ApiService().getToken();
     _stompClient = StompClient(
       config: StompConfig.sockJS(
-        url: 'http://192.168.168.10:8080/chatserver',
+        url: 'http://192.168.168.13:8080/chatserver',
         webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
         onConnect: _onConnectCallback,
         onDisconnect: _onDisconnected,
-        onWebSocketError: (dynamic error) => print(error.toString()),
-        onStompError: (StompFrame frame) => print('Stomp error: ${frame.body}'),
+        onWebSocketError: _onWebSocketError,
+        onStompError: _onStompError,
         // ... 其他配置 ...
       ),
     );
@@ -78,36 +88,4 @@ class ChatService {
     _stompClient?.deactivate();
   }
 
-  // void connectWithRetry() async {
-  //   try {
-  //     var token = await ApiService().getToken();
-  //     print(token);
-  //     _stompClient = StompClient(
-  //       config: StompConfig.sockJS(
-  //         url: 'http://192.168.168.10:8080/chatserver',
-  //         webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
-  //         onConnect: onConnectCallback,
-  //         onWebSocketError: (e) => print(e.toString()),
-  //         onStompError: (d) => print('error stomp'),
-  //         heartbeatIncoming: const Duration(seconds: 10),
-  //         heartbeatOutgoing: const Duration(seconds: 10),
-  //         onDisconnect: (f) {
-  //           print("=================token==================");
-  //           onDisconnected();
-  //           Future.delayed(const Duration(seconds: 1), () async {
-  //             print("Disconnected, attempting to reconnect...");
-  //             var token = ApiService().getToken();
-  //             print("=================token==================");
-  //             print(token);
-  //             connectWithRetry(); // 重新连接
-  //           });
-  //         },
-  //         // 其他配置...
-  //       ),
-  //     )
-  //       ..activate();
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
 }

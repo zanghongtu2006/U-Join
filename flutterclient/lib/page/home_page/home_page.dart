@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/login/login_page.dart';
 import 'package:flutterclient/page/mine_page/sub_page/task_page.dart';
+import 'package:oktoast/oktoast.dart';
 
 import '../button/logo_button.dart';
 import 'user_list_page.dart';
@@ -53,11 +54,12 @@ class _HomePageState extends State<HomePage>
             logoPath: 'assets/icon/rank.png',
             text: '排行榜',
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => LoginPage()), // TargetPage是要跳转到的页面
-              );
+              showToast('正在开发中',
+                  duration: const Duration(seconds: 2),
+                  position: ToastPosition.bottom,
+                  backgroundColor: Colors.black12,
+                  textPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  textStyle: const TextStyle(color: Colors.black));
             },
           ),
           const SizedBox(width: 10),

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/login/profile/personality_tag.dart';
 import 'package:flutterclient/util/api_service.dart';
@@ -102,19 +101,23 @@ class _UserInformationPageState extends State<UserInformationPage> {
           ),
           child: SingleChildScrollView(
             child: Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   const SizedBox(height: 20),
                   const SizedBox(
                     width: 240,
-                    child: CustomStepProgress(totalSteps: 4, currentStep: 1, activeColor: Colors.indigoAccent, inactiveColor: Colors.grey),
+                    child: CustomStepProgress(
+                        totalSteps: 4,
+                        currentStep: 1,
+                        activeColor: Colors.indigoAccent,
+                        inactiveColor: Colors.grey),
                   ),
                   const SizedBox(height: 10),
                   const Text('完善个人资料',
                       style:
-                      TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
                   const Text('认真填写，把你推荐给最适合的那个Ta~',
                       style: TextStyle(fontSize: 10, color: Colors.grey)),
@@ -135,7 +138,7 @@ class _UserInformationPageState extends State<UserInformationPage> {
                       GestureDetector(
                         onTap: () => setState(() => _gender = 'MALE'),
                         child: Container(
-                          padding: EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(10),
                           child: Image.asset(
                             _gender == 'MALE' ? _maleIconColor : _maleIconGrey,
                             width: 80,
@@ -159,7 +162,7 @@ class _UserInformationPageState extends State<UserInformationPage> {
                   const SizedBox(height: 16),
                   Row(
                     children: <Widget>[
-                      const Expanded(child: Text("昵称"), flex: 1),
+                      const Expanded(flex: 1, child: Text("昵称")),
                       Expanded(
                         flex: 5,
                         child: TextField(
@@ -251,35 +254,40 @@ class _UserInformationPageState extends State<UserInformationPage> {
           child: ElevatedButton(
             onPressed: () async {
               final navigator = Navigator.of(context);
-              if (nickname.isEmpty ) {
+              if (nickname.isEmpty) {
                 // 显示一个提示信息
                 showToast('昵称不能为空',
                     duration: const Duration(seconds: 2),
                     position: ToastPosition.bottom,
                     backgroundColor: Colors.black12,
-                    textPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    textPadding:
+                        const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                     textStyle: const TextStyle(color: Colors.black));
                 return;
               }
-              if (_gender.isEmpty ) {
+              if (_gender.isEmpty) {
                 // 显示一个提示信息
                 showToast('性别不能为空',
                     duration: const Duration(seconds: 2),
                     position: ToastPosition.bottom,
                     backgroundColor: Colors.black12,
-                    textPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    textPadding:
+                        const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                     textStyle: const TextStyle(color: Colors.black));
                 return;
               }
               var response = await ApiService().post(
                 '/mine/profile',
-                {'nickName': nickname, 'birthDate': selectedDate.millisecondsSinceEpoch, 'gender':_gender,
-                'height':height, 'weight':weight},
+                {
+                  'nickName': nickname,
+                  'birthDate': selectedDate.millisecondsSinceEpoch,
+                  'gender': _gender,
+                  'height': height,
+                  'weight': weight
+                },
               );
-              print(response.statusCode);
               if (response.statusCode == 200) {
                 var data = json.decode(response.body);
-                print(data);
                 if (data['code'] == 0) {
                   navigator.push(
                     MaterialPageRoute(
@@ -297,7 +305,10 @@ class _UserInformationPageState extends State<UserInformationPage> {
               padding: const EdgeInsets.symmetric(vertical: 12.0), // 垂直填充
               elevation: 0,
             ),
-            child: const Text("下一步", style: TextStyle(fontSize: 16.0, color: Colors.white),),
+            child: const Text(
+              "下一步",
+              style: TextStyle(fontSize: 16.0, color: Colors.white),
+            ),
           ),
         ),
       ),

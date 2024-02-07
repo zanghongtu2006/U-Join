@@ -121,9 +121,9 @@ class _CommonLoginPageState extends State<CommonLoginPage> {
                             result['data']['access-token'],
                             result['data']['refresh-token']);
                         // 跳转到首页或其他页面
-                        Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => HomeScreen(),
-                        ));
+                        Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (context) => HomeScreen()),
+                        );
                       } else {
                         // 显示错误信息
                         showToast("用户名或密码错误",

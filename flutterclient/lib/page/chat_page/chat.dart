@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutterclient/util/ws_service.dart';
 
 class ChatPage extends StatefulWidget {
-  final String userId;
+  final String conversationId;
   final String avatar;
   final String nickName;
 
   const ChatPage(
       {Key? key,
-      required this.userId,
+      required this.conversationId,
       required this.avatar,
       required this.nickName})
       : super(key: key);
@@ -53,7 +53,7 @@ class _ChatPageState extends State<ChatPage> {
         title: Center(
             child: Text(
           widget.nickName,
-          style: TextStyle(fontSize: 18),
+          style: const TextStyle(fontSize: 18),
         )), // 对方的名字或群聊名
       ),
       body: Column(
@@ -74,13 +74,13 @@ class _ChatPageState extends State<ChatPage> {
                       if (!isMe) ...[
                         CircleAvatar(
                             backgroundImage: NetworkImage(widget.avatar)), // 头像
-                        SizedBox(width: 10),
+                        const SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Container(
-                              margin: EdgeInsets.all(5.0),
-                              padding: EdgeInsets.all(10.0),
+                              margin: const EdgeInsets.all(5.0),
+                              padding: const EdgeInsets.all(10.0),
                               decoration: BoxDecoration(
                                 color: Colors.grey[300],
                                 borderRadius: BorderRadius.circular(10),
@@ -94,8 +94,8 @@ class _ChatPageState extends State<ChatPage> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: <Widget>[
                             Container(
-                              margin: EdgeInsets.all(5.0),
-                              padding: EdgeInsets.all(10.0),
+                              margin: const EdgeInsets.all(5.0),
+                              padding: const EdgeInsets.all(10.0),
                               decoration: BoxDecoration(
                                 color: Colors.blue[300],
                                 borderRadius: BorderRadius.circular(10),
@@ -149,13 +149,13 @@ class _ChatPageState extends State<ChatPage> {
                         child: Container(
                           alignment: Alignment.center,
                           height: 48,
-                          child: Text('Hold to record'),
+                          child: const Text('按住 说话'),
                         ),
                       )
                     : TextField(
                         controller: _textController,
                         decoration: InputDecoration(
-                          hintText: 'Type a message',
+                          hintText: '请输入...',
                           border: OutlineInputBorder(
                             borderRadius:
                                 BorderRadius.circular(10.0), // 设置圆角的大小
@@ -164,7 +164,8 @@ class _ChatPageState extends State<ChatPage> {
                           filled: true,
                           fillColor: Colors.white,
                           // 设置输入框的填充色为白色
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // 根据需要调整内边距
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8), // 根据需要调整内边距
                         ),
                         onSubmitted: (value) {
                           // 当键盘上的发送按钮被点击时，调用发送消息的逻辑
@@ -210,7 +211,7 @@ class _ChatPageState extends State<ChatPage> {
             ],
           ),
           AnimatedContainer(
-            duration: Duration(milliseconds: 300),
+            duration: const Duration(milliseconds: 300),
             height: _isPanelExpanded ? 200 : 0, // 根据_isPanelExpanded调整高度
             color: Colors.white, // 或者任何您喜欢的颜色
             child: GridView.count(
@@ -221,14 +222,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child: Image.asset('assets/chat/mock_cp.png',
-                              width: 60)),
-                      Text(
-                        "假装情侣",
-                        style: TextStyle(fontSize: 10),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        child: Image.asset('assets/chat/mock_cp.png', width: 60),
                       ),
+                      const Text("假装情侣", style: TextStyle(fontSize: 10)),
                     ],
                   ),
                 ),
@@ -237,14 +234,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child: Image.asset('assets/chat/icon_cp.png',
-                              width: 60)),
-                      Text(
-                        "CP",
-                        style: TextStyle(fontSize: 10),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        child: Image.asset('assets/chat/icon_cp.png', width: 60),
                       ),
+                      const Text("CP", style: TextStyle(fontSize: 10)),
                     ],
                   ),
                 ),
@@ -253,14 +246,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child: Image.asset('assets/chat/icon_qinmi.png',
-                              width: 60)),
-                      Text(
-                        "亲密关系",
-                        style: TextStyle(fontSize: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          child: Image.asset('assets/chat/icon_qinmi.png',width: 60),
                       ),
+                      const Text("亲密关系", style: TextStyle(fontSize: 10)),
                     ],
                   ),
                 ),
@@ -269,14 +258,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child:
-                              Image.asset('assets/chat/shaizi.png', width: 60)),
-                      Text(
-                        "掷骰子",
-                        style: TextStyle(fontSize: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          child: Image.asset('assets/chat/shaizi.png', width: 60),
                       ),
+                      const Text("掷骰子", style: TextStyle(fontSize: 10),),
                     ],
                   ),
                 ),
@@ -285,14 +270,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child: Image.asset('assets/chat/caiquan.png',
-                              width: 60)),
-                      Text(
-                        "猜拳",
-                        style: TextStyle(fontSize: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          child: Image.asset('assets/chat/caiquan.png', width: 60),
                       ),
+                      const Text("猜拳", style: TextStyle(fontSize: 10)),
                     ],
                   ),
                 ),
@@ -301,14 +282,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                          padding:
-                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child: Image.asset('assets/chat/zhenxinhua.png',
-                              width: 60)),
-                      Text(
-                        "真心话",
-                        style: TextStyle(fontSize: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          child: Image.asset('assets/chat/zhenxinhua.png', width: 60),
                       ),
+                      const Text("真心话", style: TextStyle(fontSize: 10)),
                     ],
                   ),
                 ),
@@ -322,7 +299,7 @@ class _ChatPageState extends State<ChatPage> {
 
   Widget _buildIconButton(String imagePath, VoidCallback onPressed) {
     return CircleAvatar(
-      backgroundColor: Colors.grey[200], // 按钮的背景色
+      backgroundColor: Colors.transparent, // 按钮的背景色
       radius: 20, // 按钮的大小
       child: InkWell(
         onTap: onPressed,
