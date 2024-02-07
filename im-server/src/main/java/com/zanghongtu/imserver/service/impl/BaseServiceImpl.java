@@ -233,6 +233,18 @@ public class BaseServiceImpl<T, ID> implements IBaseService<T, ID> {
     }
 
     @Override
+    public Page<T> search(@NotNull Specification<T> spec, Integer pageIndex, Integer pageSize) {
+        PageRequest pageRequest = PageRequest.of(pageIndex, pageSize);
+        return repository.findAll(spec, pageRequest);
+    }
+
+    @Override
+    public Page<T> search(@NotNull Specification<T> spec, @NotNull Sort sort, Integer pageIndex, Integer pageSize) {
+        PageRequest pageRequest = PageRequest.of(pageIndex, pageSize, sort);
+        return repository.findAll(spec, pageRequest);
+    }
+
+    @Override
     public Page<T> findAll(Specification<T> spec, Integer page, Integer pageSize) {
         Pageable pageRequest = PageRequest.of(page, pageSize);
         return repository.findAll(spec, pageRequest);

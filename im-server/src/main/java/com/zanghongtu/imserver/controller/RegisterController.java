@@ -3,13 +3,10 @@ package com.zanghongtu.imserver.controller;
 import com.zanghongtu.imserver.controller.dto.login.TokenDTO;
 import com.zanghongtu.imserver.controller.dto.login.TokenResultDTO;
 import com.zanghongtu.imserver.controller.dto.user.UserRegisterDTO;
-import com.zanghongtu.imserver.controller.dto.user.UserStatus;
 import com.zanghongtu.imserver.exception.AlreadyExistsException;
 import com.zanghongtu.imserver.model.User;
 import com.zanghongtu.imserver.model.UserInfo;
-import com.zanghongtu.imserver.service.ITokenService;
-import com.zanghongtu.imserver.service.IUserInfoService;
-import com.zanghongtu.imserver.service.IUserService;
+import com.zanghongtu.imserver.service.*;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,21 +25,29 @@ public class RegisterController extends BaseController {
 
     private final IUserService userService;
 
+    private final IRegisterService registerService;
+
     private final IUserInfoService userInfoService;
 
     private final PasswordEncoder passwordEncoder;
 
     private final ITokenService tokenService;
 
+    private final IConversationService conversationService;
+
     @Autowired
     public RegisterController(IUserService userService,
+                              IRegisterService registerService,
                               IUserInfoService userInfoService,
                               PasswordEncoder passwordEncoder,
-                              ITokenService tokenService) {
+                              ITokenService tokenService,
+                              IConversationService conversationService) {
         this.userService = userService;
+        this.registerService = registerService;
         this.userInfoService = userInfoService;
         this.passwordEncoder = passwordEncoder;
         this.tokenService = tokenService;
+        this.conversationService = conversationService;
     }
 
     @PostMapping("")
@@ -56,11 +61,7 @@ public class RegisterController extends BaseController {
         newUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
         // 保存用户
         userService.save(newUser);
-        UserInfo userInfo = new UserInfo();
-        userInfo.setAuthUserId(newUser.getId());
-        userInfo.setFullName(userDto.getUsername());
-        userInfo.setStatus(UserStatus.REGISTERD);
-        userInfoService.insert(userInfo);
+        UserInfo userInfo = registerService.register(userDto.getUsername(), newUser);
 
         String sessionID = UUID.randomUUID().toString();
         TokenDTO tokenDTO = tokenService.generateToken(userInfo, sessionID);
@@ -71,4 +72,5 @@ public class RegisterController extends BaseController {
 
         return loginResultDTO;
     }
+
 }

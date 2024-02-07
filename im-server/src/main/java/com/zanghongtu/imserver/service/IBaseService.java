@@ -78,6 +78,10 @@ public interface IBaseService<T, ID> {
 
     <S extends T> Page<S> search(@NotNull Example<S> example, @NotNull Sort sort, Integer pageIndex, Integer pageSize);
 
+    Page<T> search(@NotNull Specification<T> spec, Integer pageIndex, Integer pageSize);
+
+    Page<T>  search(@NotNull Specification<T> spec, @NotNull Sort sort, Integer pageIndex, Integer pageSize);
+
     Page<T> findAll(Specification<T> spec, Integer page, Integer pageSize);
 
     Page<T> findAll(Specification<T> spec, Sort sort, Integer page, Integer pageSize);

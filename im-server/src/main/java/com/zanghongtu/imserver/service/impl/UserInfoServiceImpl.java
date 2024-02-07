@@ -1,5 +1,6 @@
 package com.zanghongtu.imserver.service.impl;
 
+import com.zanghongtu.imserver.controller.dto.user.UserType;
 import com.zanghongtu.imserver.model.UserInfo;
 import com.zanghongtu.imserver.repository.UserInfoRepository;
 import com.zanghongtu.imserver.service.IUserInfoService;
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.support.JpaRepositoryImplementation;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -26,5 +28,13 @@ public class UserInfoServiceImpl extends BaseServiceImpl<UserInfo, String> imple
         UserInfo example = new UserInfo();
         example.setAuthUserId(id);
         return findOne(Example.of(example));
+    }
+
+    @Override
+    public UserInfo getClient() {
+        UserInfo clientExample = new UserInfo();
+        clientExample.setType(UserType.CLIENT);
+        List<UserInfo> clients = findAll(Example.of(clientExample));
+        return clients.get(0);
     }
 }

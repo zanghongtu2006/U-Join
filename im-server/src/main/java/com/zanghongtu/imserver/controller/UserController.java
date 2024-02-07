@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.LinkedList;
 import java.util.List;
 
 @Slf4j
@@ -31,12 +32,12 @@ public class UserController extends BaseController {
         Page<UserInfo> pageResult = userInfoService.search(Example.of(userInfo), pageRequest.getPageIndex(), pageRequest.getPageSize());
         PageResponse<UserInfoDTO> response = model2dto(pageResult, UserInfoDTO.class);
         if (pageRequest.getPageIndex() == 0) {
-            UserInfo clientExample = new UserInfo();
-            clientExample.setType(UserType.CLIENT);
-            List<UserInfo> clients = userInfoService.findAll(Example.of(clientExample));
+            UserInfo client = userInfoService.getClient();
+            List<UserInfo> userInfos = new LinkedList<>();
+            userInfos.add(client);
             List<UserInfo> result = pageResult.getContent();
-            clients.addAll(result);
-            List<UserInfoDTO> newResults = model2dto(result, UserInfoDTO.class);
+            userInfos.addAll(result);
+            List<UserInfoDTO> newResults = model2dto(userInfos, UserInfoDTO.class);
             response.setRows(newResults);
         }
         return response;

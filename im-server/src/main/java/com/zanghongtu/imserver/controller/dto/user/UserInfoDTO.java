@@ -11,7 +11,7 @@ public class UserInfoDTO {
 
     private String nickName;
 
-    private String avatar = "https://placekitten.com/200/200";
+    private String avatar;
 
     private String mobile;
 

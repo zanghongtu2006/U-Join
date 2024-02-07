@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface IUserInfoService extends IBaseService<UserInfo, String> {
     Optional<UserInfo> getByAuthId(String id);
+
+    UserInfo getClient();
 }
