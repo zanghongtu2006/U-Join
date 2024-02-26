@@ -5,15 +5,19 @@ import 'chat.dart';
 class ChatListItem extends StatelessWidget {
 
   final String conversationId;
+  final String shortConversationId;
   final String avatarUrl;
   final String nickName;
   final String lastMessage;
+  final List<String> userIds;
   final bool isOnline;
 
   ChatListItem({
     required this.conversationId,
+    required this.shortConversationId,
     required this.avatarUrl,
     required this.nickName,
+    required this.userIds,
     required this.lastMessage, // 需要在构造函数中传入
     required this.isOnline, // 需要在构造函数中传入
   });
@@ -65,7 +69,8 @@ class ChatListItem extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ChatPage(conversationId: conversationId, avatar: avatarUrl, nickName:nickName),
+            builder: (context) => ChatPage(conversationId: conversationId,userIds:userIds,
+                shortConversationId: shortConversationId,avatar: avatarUrl, nickName:nickName),
           ),
         );
       },

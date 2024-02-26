@@ -52,8 +52,10 @@ class _ChatListWidgetState extends State<ChatListWidget> {
             ),
             child: ChatListItem(
               conversationId: contact['conversationId'],
+              shortConversationId: contact['shortConversationId'],
               avatarUrl: contact['avatar'],
               nickName: contact['nickName'],
+              userIds: List<String>.from(contact['userIds'].map((x) => x.toString())),
               lastMessage: contact['lastMessage'],
               isOnline: true,
             ),
@@ -106,7 +108,6 @@ class _ChatListWidgetState extends State<ChatListWidget> {
       var response = await ApiService().get("/conversations/latest");
       if (response.statusCode == 200) {
         var data = json.decode(response.body)['data'];
-        print(data);
         setState(() {
           contacts.clear();
           contacts.addAll(data['rows']);

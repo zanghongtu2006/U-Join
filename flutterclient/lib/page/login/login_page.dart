@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutterclient/page/login/privacy_before_login.dart';
 import 'package:flutterclient/util/api_service.dart';
 
-import '../../util/web_page.dart';
 import 'common_login.dart';
 
 class LoginPage extends StatefulWidget {

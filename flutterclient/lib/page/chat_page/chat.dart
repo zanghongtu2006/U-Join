@@ -1,49 +1,272 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutterclient/page/chat_page/model/chat_model.dart';
+import 'package:flutterclient/util/message_util.dart';
 import 'package:flutterclient/util/ws_service.dart';
+import 'package:stomp_dart_client/stomp.dart';
+import 'package:stomp_dart_client/stomp_frame.dart';
+import 'package:stomp_dart_client/stomp_handler.dart';
+
+import '../../util/api_service.dart';
+import '../../util/chat_util.dart';
+import '../../util/db_manager.dart';
 
 class ChatPage extends StatefulWidget {
   final String conversationId;
+  final String shortConversationId;
   final String avatar;
   final String nickName;
+  final List<String> userIds;
 
-  const ChatPage(
-      {Key? key,
-      required this.conversationId,
-      required this.avatar,
-      required this.nickName})
-      : super(key: key);
+  const ChatPage({
+    Key? key,
+    required this.conversationId,
+    required this.shortConversationId,
+    required this.avatar,
+    required this.nickName,
+    required this.userIds,
+  }) : super(key: key);
 
   @override
   _ChatPageState createState() => _ChatPageState();
 }
 
 class _ChatPageState extends State<ChatPage> {
+  final Map<String, Timer> _timers = {};
   final TextEditingController _textController = TextEditingController();
   bool _isRecording = false;
   bool _isPanelExpanded = false; // 用于控制面板展开/收缩的状态
+  final ScrollController _scrollController = ScrollController();
+  StompUnsubscribe? _unsubscribe; // 这是订阅的标识符
 
-  // 假设的聊天记录
-  final List<Map<String, dynamic>> _messages = [
-    {
-      'sender': 'Alice',
-      'text': 'Hello, how are you?',
-      'timestamp': DateTime.now().subtract(Duration(minutes: 2)),
-      'isMe': false,
-    },
-    {
-      'sender': '零下十一度',
-      'text': 'I am fine, thanks!',
-      'timestamp': DateTime.now().subtract(Duration(minutes: 1)),
-      'isMe': true,
-    },
-    // 更多消息...
-  ];
+  late String myUid;
+  late String myAvatar;
+  late String myNickName;
+  late List<ChatModel> _messages = [];
 
-  void _onSendButtonPressed() {
-    String destination = '/app/chat'; // 您想要发送到的目的地
-    String message = _textController.text; // 从文本输入控件获取的消息文本
-    ChatService().sendMessage(destination, message);
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+    _loadMessages();
+    _subscribeTopic();
+  }
+
+  @override
+  void dispose() {
+    // 取消订阅
+    _unsubscribe?.call();
+    for (String key in _timers.keys) {
+      _timers[key]?.cancel();
+      _timers.remove(key);
+    }
+    super.dispose();
+  }
+
+  void _subscribeTopic() {
+    StompClient? stompClient = ChatService().getStompClient();
+    if (stompClient != null && stompClient.connected) {
+      _unsubscribe = stompClient.subscribe(
+        destination: '/user/topic/chat-reply',
+        callback: (StompFrame frame) async {
+          if (frame.body != null) {
+            // 处理收到的消息
+            String? body = frame.body;
+            print('Chat reply: $body');
+            if (body != null) {
+              ChatModel? message =
+                  await MessageUtil.instance.dealReceived(body, myUid);
+              if (message != null) {
+                _loadMessages();
+              }
+            }
+          }
+        },
+      );
+    }
+  }
+
+  void _retrySendMessage(ChatModel chatModel) async {
+    await DatabaseManager.instance.deleteMessage(chatModel.messageId);
+    _removeMessage(chatModel.messageId);
+    String messageId = ChatUtils.generateMessageId(widget.shortConversationId);
+    chatModel.messageId = messageId;
+    chatModel.timestamp = DateTime.now();
+    chatModel.status = Status(
+      read: true,
+      sendTime: DateTime.now(),
+    );
+    chatModel.sendStatus = "SENDING";
+    _sendMessage(chatModel);
+  }
+
+  void _removeMessage(String messageId) {
+    setState(() {
+      _messages.removeWhere((element) => element.messageId == messageId);
+    });
+    // 等待列表更新完成
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void _appendMessage(ChatModel chatModel) {
+    setState(() {
+      _messages.add(chatModel);
+    });
+    // 等待列表更新完成
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void _sendMessage(ChatModel chatModel) async {
+    bool sendResult = await MessageUtil.instance.sendMessage(chatModel);
+    if (!sendResult) {
+      _setMessageFailed(chatModel);
+    } else {
+      _appendMessage(chatModel);
+      _timers[chatModel.messageId] = Timer(const Duration(seconds: 1), () {
+        _updateMessageStatus(chatModel.messageId);
+      });
+      // 设置定时器，在5秒后检查是否收到反馈
+      MessageUtil.instance.putMessageTimers(chatModel);
+    }
+  }
+
+  Future<void> _updateMessageStatus(String messageId) async {
+    ChatModel message =
+        await DatabaseManager.instance.findMessagesById(messageId);
+    if (message.sendStatus != 'SENDING') {
+      List<ChatModel> messages = _messages;
+      for (ChatModel chatModel in messages) {
+        if (chatModel.messageId == messageId) {
+          chatModel.sendStatus = message.sendStatus;
+        }
+      }
+      setState(() {
+        _messages = messages;
+      });
+      _timers[messageId]?.cancel();
+      _timers.remove(messageId);
+    }
+  }
+
+  void _onSendButtonPressed() async {
+    // 消息文本
+    String messageText = _textController.text;
+    // 生成消息ID
+    String messageId = ChatUtils.generateMessageId(widget.shortConversationId);
+    // 构建消息模型
+    final chatModel = ChatModel(
+      messageId: messageId,
+      conversationId: widget.conversationId,
+      shortConversationId: widget.shortConversationId,
+      isMe: true,
+      senderId: myUid,
+      sender: User(
+        id: myUid,
+        nickName: myNickName,
+        avatar: myAvatar,
+      ),
+      content: Content(
+        type: "TEXT",
+        text: messageText,
+      ),
+      timestamp: DateTime.now(),
+      messageType: "CHAT",
+      status: Status(
+        read: true,
+        sendTime: DateTime.now(),
+      ),
+      sendStatus: "SENDING",
+      additionalInfo: AdditionalInfo(
+        replyToMessageId: "",
+      ),
+    );
+    // 清除文本输入框
     _textController.clear();
+    _sendMessage(chatModel);
+  }
+
+  Future<void> _setMessageFailed(ChatModel chatModel) async {
+    print("========================send failed=========================");
+    chatModel.sendStatus = 'FAILED';
+    await DatabaseManager.instance.insertMessage(chatModel);
+    _appendMessage(chatModel);
+  }
+
+  void _loadMessages() async {
+    final messages = await DatabaseManager.instance
+        .findMessagesByConversationId(widget.conversationId);
+    final senderIds =
+        messages.map((message) => message.senderId).toSet().toList();
+    final List<User> senders =
+        await DatabaseManager.instance.findUsersByIds(senderIds);
+    final senderMap = {for (var sender in senders) sender.id: sender};
+    final now = DateTime.now();
+    for (var message in messages) {
+      final difference = now.difference(message.timestamp).inSeconds;
+      if (message.sendStatus == 'SENDING' && difference > 15) {
+        message.sendStatus = 'FAILED';
+      }
+      message.sender = senderMap[message.senderId];
+    }
+    setState(() {
+      _messages = messages;
+    });
+    // 等待列表更新完成
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      var combinedIds = widget.userIds.join(',');
+      final Map<String, String> params = {'id': combinedIds};
+      var response = await ApiService().get("/users", params: params);
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body)['data'];
+        List<User> users =
+            List<User>.from(data.map((item) => User.fromMap(item)));
+        DatabaseManager.instance.insertOrUpdateUsers(users);
+        var uid = await ApiService().getUid();
+        if (uid != null) {
+          for (var userData in users) {
+            if (userData.id == uid) {
+              setState(() {
+                myUid = userData.id; // 确保数据中有 'id' 字段
+                myNickName = userData.nickName ?? '';
+                myAvatar = userData.avatar ?? '';
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -60,10 +283,11 @@ class _ChatPageState extends State<ChatPage> {
         children: <Widget>[
           Expanded(
             child: ListView.builder(
+              controller: _scrollController, // 使用控制器
               itemCount: _messages.length,
               itemBuilder: (context, index) {
                 final message = _messages[index];
-                final isMe = message['isMe'];
+                final isMe = message.isMe;
                 return Padding(
                   padding:
                       const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
@@ -85,7 +309,7 @@ class _ChatPageState extends State<ChatPage> {
                                 color: Colors.grey[300],
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: Text(message['text']), // 聊天内容
+                              child: Text(message.content.text), // 聊天内容
                             ),
                           ],
                         ),
@@ -93,21 +317,39 @@ class _ChatPageState extends State<ChatPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: <Widget>[
-                            Container(
-                              margin: const EdgeInsets.all(5.0),
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                color: Colors.blue[300],
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(message['text'],
-                                  style:
-                                      TextStyle(color: Colors.white)), // 聊天内容
-                            ),
+                            Text(message.sendStatus),
+                            Row(
+                              children: [
+                                if (message.sendStatus == 'FAILED')
+                                  IconButton(
+                                    icon: const Icon(Icons.refresh,
+                                        color: Colors.red),
+                                    // 红色重试按钮
+                                    onPressed: () {
+                                      // 在此处处理重试逻辑
+                                      _retrySendMessage(message);
+                                    },
+                                  ),
+                                Container(
+                                  margin: const EdgeInsets.all(5.0),
+                                  padding: const EdgeInsets.all(10.0),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue[300],
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(message.content.text,
+                                      style: const TextStyle(
+                                          color: Colors.white)), // 聊天内容
+                                ),
+                              ],
+                            )
                           ],
                         ),
-                        SizedBox(width: 10),
-                        CircleAvatar(child: Text(message['sender'][0])), // 头像
+                        const SizedBox(width: 10),
+                        CircleAvatar(
+                            backgroundImage:
+                                NetworkImage(message.sender!.avatar)),
+                        // 头像
                       ],
                     ],
                   ),
@@ -222,8 +464,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                        child: Image.asset('assets/chat/mock_cp.png', width: 60),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 12),
+                        child:
+                            Image.asset('assets/chat/mock_cp.png', width: 60),
                       ),
                       const Text("假装情侣", style: TextStyle(fontSize: 10)),
                     ],
@@ -234,8 +478,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                        child: Image.asset('assets/chat/icon_cp.png', width: 60),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 12),
+                        child:
+                            Image.asset('assets/chat/icon_cp.png', width: 60),
                       ),
                       const Text("CP", style: TextStyle(fontSize: 10)),
                     ],
@@ -246,8 +492,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child: Image.asset('assets/chat/icon_qinmi.png',width: 60),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 12),
+                        child: Image.asset('assets/chat/icon_qinmi.png',
+                            width: 60),
                       ),
                       const Text("亲密关系", style: TextStyle(fontSize: 10)),
                     ],
@@ -258,10 +506,14 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child: Image.asset('assets/chat/shaizi.png', width: 60),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 12),
+                        child: Image.asset('assets/chat/shaizi.png', width: 60),
                       ),
-                      const Text("掷骰子", style: TextStyle(fontSize: 10),),
+                      const Text(
+                        "掷骰子",
+                        style: TextStyle(fontSize: 10),
+                      ),
                     ],
                   ),
                 ),
@@ -270,8 +522,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child: Image.asset('assets/chat/caiquan.png', width: 60),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 12),
+                        child:
+                            Image.asset('assets/chat/caiquan.png', width: 60),
                       ),
                       const Text("猜拳", style: TextStyle(fontSize: 10)),
                     ],
@@ -282,8 +536,10 @@ class _ChatPageState extends State<ChatPage> {
                   child: Column(
                     children: [
                       Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child: Image.asset('assets/chat/zhenxinhua.png', width: 60),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 12),
+                        child: Image.asset('assets/chat/zhenxinhua.png',
+                            width: 60),
                       ),
                       const Text("真心话", style: TextStyle(fontSize: 10)),
                     ],

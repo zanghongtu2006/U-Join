@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutterclient/main.dart';
 import 'package:oktoast/oktoast.dart';
 
 import '../../util/api_service.dart';
@@ -119,7 +118,9 @@ class _CommonLoginPageState extends State<CommonLoginPage> {
                         // 存储token
                         await ApiService().setToken(
                             result['data']['access-token'],
-                            result['data']['refresh-token']);
+                            result['data']['refresh-token'],
+                            result['data']['userId'],
+                        );
                         // 跳转到首页或其他页面
                         Navigator.of(context).pushReplacement(
                             MaterialPageRoute(builder: (context) => HomeScreen()),

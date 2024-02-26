@@ -79,7 +79,7 @@ class UsersTabView extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => ChatPage(conversationId: "hello",nickName: 'hello',avatar: "avatar",)), // TargetPage是要跳转到的页面
+                                  builder: (context) => ChatPage(userIds:[],conversationId: "hello",shortConversationId: "hello",nickName: 'hello',avatar: "avatar",)), // TargetPage是要跳转到的页面
                             );
                           },
                         ),

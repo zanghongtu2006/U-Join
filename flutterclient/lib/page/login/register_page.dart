@@ -117,7 +117,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         if (result['code'] == 0) {
                           await ApiService().setToken(
                               result['data']['access-token'],
-                              result['data']['refresh-token']);
+                              result['data']['refresh-token'],
+                              result['data']['userId'],
+                          );
                           // 调用self接口
                           _fetchMineData();
                           navigator.push(MaterialPageRoute(

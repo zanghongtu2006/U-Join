@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/home_screen.dart';
-import 'package:flutterclient/page/mine_page/mine_page.dart';
 import 'package:oktoast/oktoast.dart';
 
 class CertificationPage extends StatelessWidget {

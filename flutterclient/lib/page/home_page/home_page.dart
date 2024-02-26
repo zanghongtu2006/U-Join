@@ -1,6 +1,5 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterclient/page/login/login_page.dart';
 import 'package:flutterclient/page/mine_page/sub_page/task_page.dart';
 import 'package:oktoast/oktoast.dart';
 

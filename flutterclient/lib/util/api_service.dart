@@ -12,15 +12,23 @@ class ApiService {
   final storage = const FlutterSecureStorage();
   final timeout = 10;
 
-  ApiService({this.baseUrl = 'http://192.168.168.13:8080'});
+  ApiService({this.baseUrl = 'http://192.168.168.15:8080'});
 
-  Future<void> setToken(String accessToken, String refreshToken) async {
+  Future<void> setToken(String accessToken, String refreshToken, String uid) async {
     await storage.write(key: 'access_token', value: accessToken);
     await storage.write(key: 'refresh_token', value: refreshToken);
+    await storage.write(key: 'uid', value: uid);
   }
 
-  Future<String?> _getToken() async {
-    return getToken();
+  Future<String?> getUid() async {
+    try {
+      String? uid = await storage.read(key: 'uid');
+      print("Retrieved uid: $uid"); // 调试信息
+      return uid ?? '';
+    } catch (e) {
+      print("Error getting uid: $e"); // 错误处理
+      return '';
+    }
   }
 
   Future<String?> getToken() async {
@@ -48,7 +56,7 @@ class ApiService {
       print(result['data']);
       // 存储token
       await setToken(
-          result['data']['access-token'], result['data']['refresh-token']);
+          result['data']['access-token'], result['data']['refresh-token'], result['data']['userId']);
       return true;
     } else {
       print(response.statusCode);
@@ -62,7 +70,7 @@ class ApiService {
 
   Future<http.Response> get(String endpoint,
       {Map<String, dynamic>? params}) async {
-    var token = await _getToken();
+    var token = await getToken();
     var headers = {
       'Authorization': 'Bearer $token',
     };
@@ -83,7 +91,7 @@ class ApiService {
   }
 
   Future<http.Response> post(String endpoint, dynamic data) async {
-    var token = await _getToken();
+    var token = await getToken();
     var headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
@@ -103,7 +111,7 @@ class ApiService {
   }
 
   Future<http.Response> put(String endpoint, dynamic data) async {
-    var token = await _getToken();
+    var token = await getToken();
     var headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
@@ -123,7 +131,7 @@ class ApiService {
   }
 
   Future<http.Response> delete(String endpoint, dynamic data) async {
-    var token = await _getToken();
+    var token = await getToken();
     var headers = {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
@@ -213,5 +221,26 @@ class ApiService {
         response = await http.get(uri, headers: updatedHeaders);
     }
     return response; // 返回重试后的响应
+  }
+
+  bool isTokenExpired(String token) {
+    final parts = token.split('.');
+    if (parts.length != 3) {
+      throw Exception('Invalid token');
+    }
+
+    final payload = parts[1];
+    final normalized = base64Url.normalize(payload);
+    final resp = utf8.decode(base64Url.decode(normalized));
+    final payloadMap = json.decode(resp);
+
+    if (!payloadMap.containsKey('exp')) {
+      throw Exception('Invalid token: no expiry information');
+    }
+
+    final currentTimeInSeconds = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    final expiryTimeInSeconds = payloadMap['exp'];
+
+    return currentTimeInSeconds >= expiryTimeInSeconds;
   }
 }
