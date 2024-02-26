@@ -13,6 +13,12 @@ public class ChatDTO {
 
     private UserDTO recver;
 
+    private String senderId;
+
+    private String conversationId;
+
+    private String shortConversationId;
+
     private ContentDTO content;
 
     private Long timestamp;

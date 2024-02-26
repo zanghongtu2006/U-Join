@@ -1,11 +1,11 @@
 package com.zanghongtu.imserver;
 
-import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
+@ComponentScan(basePackages = {"org.apache.rocketmq.*", "com.zanghongtu.*"})
 public class MessagingStompWebsocketApplication {
 
 	public static void main(String[] args) {

@@ -1,5 +1,6 @@
 package com.zanghongtu.imserver.config;
 
+import com.sun.security.auth.UserPrincipal;
 import com.zanghongtu.imserver.model.User;
 import com.zanghongtu.imserver.service.ITokenService;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 

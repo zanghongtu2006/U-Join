@@ -24,7 +24,17 @@ server:
       charset: UTF-8
       enabled: true
       force: true
-
+mq:
+  nameServer: 192.168.168.15:9876
+  topicNumber: 1
+rocketmq:
+  name-server: 192.168.168.15:9876 # RocketMQ nameserver地址
+  producer:
+    group: your_producer_group # 生产者组名
+  consumer:
+    group: your_consumer_group # 消费者组名
+    topic: your_topic # 订阅的主题
+    tag: your_tag # 订阅的标签
 #springdoc:
 #  swagger-ui:
 #    path: /swagger-ui.html

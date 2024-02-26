@@ -52,10 +52,10 @@ public class RegisterServiceImpl implements IRegisterService {
         String conversationId = "";
         if (client.getId().compareTo(userInfo.getId()) < 0) {
             conversationId += client.getId().replace("-", "") + userInfo.getId().replace("-", "");
-            shortConversationId += client.getId().substring(0, 8) + "-" + userInfo.getId().substring(0, 8);
+            shortConversationId += client.getId().substring(0, 8) + userInfo.getId().substring(0, 8);
         } else {
             conversationId += userInfo.getId().replace("-", "") + client.getId().replace("-", "");
-            shortConversationId += userInfo.getId().substring(0, 8) + "-" + client.getId().substring(0, 8);
+            shortConversationId += userInfo.getId().substring(0, 8) + client.getId().substring(0, 8);
         }
         Conversation conversation = new Conversation();
         conversation.setConversationId(conversationId);

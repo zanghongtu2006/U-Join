@@ -1,6 +1,9 @@
 package com.zanghongtu.imserver.controller.dto;
 
+import com.zanghongtu.imserver.controller.dto.chat.ConversationType;
 import lombok.Data;
+
+import java.util.Set;
 
 @Data
 public class ConversationDTO {
@@ -15,4 +18,8 @@ public class ConversationDTO {
     private Integer unReadCount;
 
     private String lastMessage;
+
+    private Set<String> userIds;
+
+    private ConversationType type;
 }

@@ -13,10 +13,12 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -24,6 +26,12 @@ import java.util.List;
 public class UserController extends BaseController {
     @Autowired
     private IUserInfoService userInfoService;
+
+    @GetMapping(path = "")
+    public List<UserInfoDTO> listByIds(@RequestParam(value = "id") Set<String> userIds) {
+        List<UserInfo> userInfos = userInfoService.findAllById(userIds);
+        return model2dto(userInfos, UserInfoDTO.class);
+    }
 
     @GetMapping(path = "contacts")
     public PageResponse<UserInfoDTO> search(UserInfoDTO userInfoDTO, PageRequest pageRequest) {

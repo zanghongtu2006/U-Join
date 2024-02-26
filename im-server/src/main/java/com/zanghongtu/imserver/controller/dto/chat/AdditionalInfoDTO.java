@@ -10,5 +10,5 @@ public class AdditionalInfoDTO {
      *       "recall_deadline": "2024-01-05T12:00:00Z"
      *     }
      */
-    private String replayToMessageId;
+    private String replyToMessageId;
 }
