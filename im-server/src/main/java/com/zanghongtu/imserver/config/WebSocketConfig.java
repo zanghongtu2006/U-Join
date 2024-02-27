@@ -2,6 +2,7 @@ package com.zanghongtu.imserver.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -28,4 +29,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         return new CustomHttpSessionHandshakeInterceptor();
     }
 
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        // 配置登录拦截器
+        registration.interceptors(new StompLoginInterceptor());
+    }
 }

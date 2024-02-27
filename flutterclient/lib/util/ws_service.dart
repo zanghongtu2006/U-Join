@@ -58,6 +58,7 @@ class ChatService {
 
   void _onWebSocketError(dynamic error) {
     print('WebSocketError from WebSocket: $error');
+    ApiService().refreshToken();
   }
 
   void _onStompError(StompFrame frame) {

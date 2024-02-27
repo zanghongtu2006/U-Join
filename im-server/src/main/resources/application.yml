@@ -25,10 +25,10 @@ server:
       enabled: true
       force: true
 mq:
-  nameServer: 192.168.168.15:9876
+  nameServer: 192.168.168.22:9876
   topicNumber: 1
 rocketmq:
-  name-server: 192.168.168.15:9876 # RocketMQ nameserver地址
+  name-server: 192.168.168.22:9876 # RocketMQ nameserver地址
   producer:
     group: your_producer_group # 生产者组名
   consumer:

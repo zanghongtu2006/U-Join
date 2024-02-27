@@ -13,10 +13,14 @@ import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -24,6 +28,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebSocketSessionHandler {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private SimpUserRegistry simpUserRegistry;
 
     @Autowired
     private WebSocketSessionMappingService webSocketSessionMappingService;
@@ -83,11 +90,10 @@ public class WebSocketSessionHandler {
         log.info("{} Receive New Messages:{} {}", Thread.currentThread().getName(), msg);
         String message = new String(msg.getBody());
         String tags = msg.getTags();
-        log.info(message);
+        log.info("handlerMessage: {}", message);
         ChatDTO chatDTO = JSON.parseObject(message, ChatDTO.class);
         chatDTO.setStatus(null);
-        Map<String, String> headers = new HashMap<>();
-        headers.put("simpleSessionId",webSocketSessionMappingService.getSessionId(tags));
+        simpUserRegistry.getUsers();
         messagingTemplate.convertAndSendToUser(webSocketSessionMappingService.getSessionId(tags), "/topic/chat-reply", chatDTO);
     }
 }
