@@ -1,26 +1,39 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'chat.dart';
 
-class ChatListItem extends StatelessWidget {
-
+class ChatListItem extends StatefulWidget {
   final String conversationId;
   final String shortConversationId;
   final String avatarUrl;
   final String nickName;
   final String lastMessage;
+  final DateTime lastUpdateTime;
   final List<String> userIds;
   final bool isOnline;
+  final Function onChatClosed;
 
-  ChatListItem({
+  const ChatListItem({
+    super.key,
     required this.conversationId,
     required this.shortConversationId,
     required this.avatarUrl,
     required this.nickName,
     required this.userIds,
+    required this.lastUpdateTime,
     required this.lastMessage, // 需要在构造函数中传入
     required this.isOnline, // 需要在构造函数中传入
+    required this.onChatClosed
   });
+
+  @override
+  _ChatListItemState createState() => _ChatListItemState();
+}
+
+class _ChatListItemState extends State<ChatListItem> {
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +41,7 @@ class ChatListItem extends StatelessWidget {
       leading: Stack(
         children: <Widget>[
           CircleAvatar(
-            backgroundImage: NetworkImage(avatarUrl),
+            backgroundImage: NetworkImage(widget.avatarUrl),
           ),
           Positioned(
             // 在线状态的小红点
@@ -37,7 +50,7 @@ class ChatListItem extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(1),
               decoration: BoxDecoration(
-                color: isOnline ? Colors.green : Colors.grey,
+                color: widget.isOnline ? Colors.green : Colors.grey,
                 shape: BoxShape.circle,
               ),
               constraints: const BoxConstraints(
@@ -54,25 +67,25 @@ class ChatListItem extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min, // 限制Row的大小只包含子部件所需的大小
             children: [
-              Text(nickName),
+              Text(widget.nickName),
               const SizedBox(width: 4),
               Image.asset('assets/icon/yhc_nv.png', width: 10)
             ],
           ),
           const Spacer(),
-          const Text('2024-01-13 14:28',style: TextStyle(color: Colors.grey, fontSize: 10))
+          Text(DateFormat('yyyy-MM-dd HH:mm').format(widget.lastUpdateTime),style: const TextStyle(color: Colors.grey, fontSize: 10))
         ],
       ),
-      subtitle: Text(lastMessage, style: TextStyle(color: Colors.grey,fontSize: 14)),
+      subtitle: Text(widget.lastMessage, style: const TextStyle(color: Colors.grey,fontSize: 14)),
       onTap: () {
         // 在这里添加跳转逻辑
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ChatPage(conversationId: conversationId,userIds:userIds,
-                shortConversationId: shortConversationId,avatar: avatarUrl, nickName:nickName),
-          ),
-        );
+            builder: (context) => ChatPage(conversationId: widget.conversationId,userIds:widget.userIds,
+                shortConversationId: widget.shortConversationId,avatar: widget.avatarUrl, nickName:widget.nickName),
+          )
+        ).then((value) => {widget.onChatClosed?.call()});
       },
     );
   }

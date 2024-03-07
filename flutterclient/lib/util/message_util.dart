@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutterclient/util/ws_service.dart';
 
 import '../page/chat_page/model/chat_model.dart';
+import '../page/chat_page/model/conversation_model.dart';
 import 'db_manager.dart';
 
 class MessageUtil {
@@ -25,7 +26,6 @@ class MessageUtil {
   }
 
   Future<void> _setMessageFailed(ChatModel chatModel) async {
-    print('=============_setMessageFailed=======================');
     chatModel.sendStatus = 'FAILED';
     await DatabaseManager.instance.insertMessage(chatModel);
     _timers[chatModel.messageId]?.cancel();
@@ -51,29 +51,47 @@ class MessageUtil {
       _removeMessageTimers(replyToMessageId);
       return message;
     } else if (messageData['messageType'] == 'CHAT') {
-      final chatModel = ChatModel(
+      bool isMe = messageData['senderId'] == myUid;
+      String sendStatus = "RECEIVED";
+      Status status;
+      if(isMe) {
+        sendStatus = "SUCCESS";
+        status = Status(
+          read: true,
+          sendTime: DateTime.fromMillisecondsSinceEpoch(messageData['timestamp'])
+        );
+      } else {
+        status = Status(
+          read: false,
+          sendTime: DateTime.fromMillisecondsSinceEpoch(messageData['timestamp'])
+        );
+      }
+      final message = ChatModel(
         messageId: messageData['messageId'],
         conversationId: messageData['conversationId'],
         shortConversationId: messageData['shortConversationId'],
-        isMe: messageData['senderId'] == myUid,
+        isMe: isMe,
         senderId: messageData['senderId'],
         content: Content(
           type: messageData['content']['type'],
           text: messageData['content']['text'],
         ),
-        timestamp: messageData['timestamp'],
+        timestamp: DateTime.fromMillisecondsSinceEpoch(messageData['timestamp']),
         messageType: messageData['messageType'],
-        status: Status(
-          read: true,
-          sendTime: DateTime.now(),
-        ),
-        sendStatus: "RECEIVED",
+        status: status,
+        sendStatus: sendStatus,
         additionalInfo: AdditionalInfo(
           replyToMessageId: messageData['additionalInfo']['replyToMessageId'],
         ),
       );
-      DatabaseManager.instance.insertMessage(chatModel);
-      return chatModel;
+      Conversation conversation = await DatabaseManager.instance.findConversationById(messageData['conversationId']);
+      conversation.lastUpdateTime = DateTime.fromMillisecondsSinceEpoch(messageData['timestamp']);
+      conversation.lastMessage = messageData['content']['text'];
+      conversation.unReadCount = conversation.unReadCount+1;
+      DatabaseManager.instance.insertMessage(message);
+      DatabaseManager.instance.insertConversation(conversation);
+      _removeMessageTimers(messageData['messageId']);
+      return message;
     }
     return null;
   }

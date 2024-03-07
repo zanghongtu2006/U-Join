@@ -1,10 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-import '../../util/api_service.dart';
+import '../../util/data_cache.dart';
 import 'chat_item.dart';
+import 'model/conversation_model.dart';
 
 class ChatListWidget extends StatefulWidget {
   const ChatListWidget({super.key});
@@ -13,18 +12,30 @@ class ChatListWidget extends StatefulWidget {
   _ChatListWidgetState createState() => _ChatListWidgetState();
 }
 
-class _ChatListWidgetState extends State<ChatListWidget> {
+class _ChatListWidgetState extends State<ChatListWidget> with WidgetsBindingObserver {
   List<dynamic> contacts = [];
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchContacts();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  // 处理应用生命周期状态变化
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      // 当应用或页面重新获得焦点时，刷新聊天列表
+      _fetchContacts();
+    }
   }
 
   @override
@@ -36,7 +47,7 @@ class _ChatListWidgetState extends State<ChatListWidget> {
         itemBuilder: (context, index) {
           var contact = contacts[index];
           return Slidable(
-            key: ValueKey(contact['id']), // 确保每个 Slidable 有唯一的 key
+            key: ValueKey(contact.conversationId), // 确保每个 Slidable 有唯一的 key
             endActionPane: ActionPane(
               motion: const DrawerMotion(),
               extentRatio: 0.16, // 定义滑动动画效果
@@ -51,13 +62,17 @@ class _ChatListWidgetState extends State<ChatListWidget> {
               ],
             ),
             child: ChatListItem(
-              conversationId: contact['conversationId'],
-              shortConversationId: contact['shortConversationId'],
-              avatarUrl: contact['avatar'],
-              nickName: contact['nickName'],
-              userIds: List<String>.from(contact['userIds'].map((x) => x.toString())),
-              lastMessage: contact['lastMessage'],
+              conversationId: contact.conversationId,
+              shortConversationId: contact.shortConversationId,
+              avatarUrl: contact.avatar,
+              nickName: contact.nickName,
+              userIds: contact.userIds,
+              lastMessage: contact.lastMessage,
+              lastUpdateTime: contact.lastUpdateTime,
               isOnline: true,
+              onChatClosed: () {
+                _fetchContacts(); // 当从聊天页面返回时调用
+              },
             ),
           );
         },
@@ -104,16 +119,14 @@ class _ChatListWidgetState extends State<ChatListWidget> {
   }
 
   Future<void> _fetchContacts() async {
+    print("=========_fetchContacts");
     try {
-      var response = await ApiService().get("/conversations/latest");
-      if (response.statusCode == 200) {
-        var data = json.decode(response.body)['data'];
-        setState(() {
-          contacts.clear();
-          contacts.addAll(data['rows']);
-        });
-      }
-    } catch (e) {
+      List<Conversation> conversations = await DataCache().fetchConversations(1, 20);
+      setState(() {
+        contacts.clear();
+        contacts.addAll(conversations);
+      });
+    } catch( e) {
       print(e);
     }
   }

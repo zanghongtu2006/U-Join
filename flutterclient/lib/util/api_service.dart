@@ -48,8 +48,11 @@ class ApiService {
 
   Future<bool> refreshToken() async {
     String? refreshToken = await storage.read(key: 'refresh_token');
+    print("refreshToken:$refreshToken");
+    if (refreshToken == null) {
+      return false;
+    }
     Map<String, String?> body = {"refresh-token": refreshToken};
-    print(refreshToken);
     var response = await ApiService().post("/token/refresh", body);
     if (response.statusCode == 200) {
       var result = json.decode(response.body);
@@ -59,7 +62,8 @@ class ApiService {
           result['data']['access-token'], result['data']['refresh-token'], result['data']['userId']);
       return true;
     } else {
-      print(response.statusCode);
+      var statusCode = response.statusCode;
+      print("refreshToken：=======$statusCode");
     }
     return false;
   }
@@ -155,7 +159,6 @@ class ApiService {
       dynamic data,
       String method = 'GET'}) async {
     if (response.statusCode == 401) {
-      _clearToken();
       bool refreshSuccess = await refreshToken();
       if (!refreshSuccess) {
         _clearToken();

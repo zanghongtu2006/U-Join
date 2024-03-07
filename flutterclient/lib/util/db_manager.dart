@@ -2,6 +2,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 import '../page/chat_page/model/chat_model.dart';
+import '../page/chat_page/model/conversation_model.dart';
+import '../page/chat_page/model/user_model.dart';
 
 class DatabaseManager {
   static final DatabaseManager instance = DatabaseManager._init();
@@ -26,10 +28,16 @@ class DatabaseManager {
   Future _createDB(Database db, int version) async {
     await db.execute('''
   CREATE TABLE conversations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversationId TEXT PRIMARY KEY,
+    shortConversationId TEXT,
+    nickName TEXT,
+    avatar TEXT,
     type TEXT,
-    target_id INTEGER,
-    last_message_timestamp DATETIME
+    unReadCount INTEGER,
+    gender TEXT,
+    userIds TEXT,
+    lastMessage TEXT,
+    lastUpdateTime DATETIME
   );
   ''');
 
@@ -54,7 +62,8 @@ class DatabaseManager {
   CREATE TABLE users (
     id TEXT PRIMARY KEY,
     nickName TEXT,
-    avatar TEXT
+    avatar TEXT,
+    gender TEXT
   );
   ''');
 
@@ -72,6 +81,7 @@ class DatabaseManager {
     db.close();
   }
 
+  //Message
   Future<void> insertMessage(ChatModel chatModel) async {
     final db = await instance.database;
     await db.insert(
@@ -111,6 +121,16 @@ class DatabaseManager {
     }).reversed.toList(); // 确保消息按时间升序排列
   }
 
+  Future<void> deleteMessage(String messageId) async {
+    final db = await instance.database;
+    await db.delete(
+      'messages',
+      where: 'messageId = ?',
+      whereArgs: [messageId],
+    );
+  }
+
+  //user
   Future<List<User>> findUsersByIds(List<String> ids) async {
     final db = await instance.database;
     // 将ID列表转换为适合SQL查询的字符串形式
@@ -130,7 +150,7 @@ class DatabaseManager {
     final db = await DatabaseManager.instance.database;
     final maps = await db.query(
       'users',
-      columns: ['id', 'nickName', 'avatar'],
+      columns: ['id', 'nickName', 'avatar', 'gender'],
       where: 'id = ?',
       whereArgs: [userId],
     );
@@ -153,12 +173,57 @@ class DatabaseManager {
     }
   }
 
-  Future<void> deleteMessage(String messageId) async {
+  //Conversations
+  Future<void> insertConversation(Conversation conversation) async {
+    final db = await instance.database;
+    await db.insert(
+      'conversations',
+      conversation.toMap(), // 假设您有一个方法将ChatModel转换为Map
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<void> insertOrUpdateConversations(List<Conversation> conversations) async {
+    for (var conversation in conversations) {
+      await insertConversation(conversation);
+    }
+  }
+
+  Future<List<Conversation>> listConversations(int offset, int limit) async {
+    final db = await instance.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'conversations',
+      orderBy: 'lastUpdateTime DESC',
+      limit: limit,
+      offset: offset,
+    );
+
+    // 将查询结果的每个Map转换为ChatModel
+    return List.generate(maps.length, (i) {
+      return Conversation.fromDB(maps[i]);
+    }).reversed.toList(); // 确保消息按时间升序排列
+  }
+
+  Future<Conversation> findConversationById(String conversationId) async {
+    final db = await instance.database;
+    final List<Map<String, dynamic>> maps = await db.query(
+        'conversations',
+        where: 'conversationId = ?',
+        whereArgs: [conversationId]
+    );
+
+    // 将查询结果的每个Map转换为ChatModel
+    return List.generate(maps.length, (i) {
+      return Conversation.fromDB(maps[i]);
+    }).reversed.toList().first; // 确保消息按时间升序排列
+  }
+
+  Future<void> deleteConversation(String conversationId) async {
     final db = await instance.database;
     await db.delete(
-      'messages',
-      where: 'messageId = ?',
-      whereArgs: [messageId],
+      'conversations',
+      where: 'conversationId = ?',
+      whereArgs: [conversationId],
     );
   }
 

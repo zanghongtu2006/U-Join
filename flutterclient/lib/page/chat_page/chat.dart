@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/chat_page/model/chat_model.dart';
+import 'package:flutterclient/util/data_cache.dart';
 import 'package:flutterclient/util/message_util.dart';
 import 'package:flutterclient/util/ws_service.dart';
 import 'package:stomp_dart_client/stomp.dart';
@@ -12,6 +12,7 @@ import 'package:stomp_dart_client/stomp_handler.dart';
 import '../../util/api_service.dart';
 import '../../util/chat_util.dart';
 import '../../util/db_manager.dart';
+import 'model/user_model.dart';
 
 class ChatPage extends StatefulWidget {
   final String conversationId;
@@ -140,7 +141,7 @@ class _ChatPageState extends State<ChatPage> {
       _setMessageFailed(chatModel);
     } else {
       _appendMessage(chatModel);
-      _timers[chatModel.messageId] = Timer(const Duration(seconds: 1), () {
+      _timers[chatModel.messageId] = Timer.periodic(const Duration(seconds: 1), (Timer t) {
         _updateMessageStatus(chatModel.messageId);
       });
       // 设置定时器，在5秒后检查是否收到反馈
@@ -149,9 +150,9 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _updateMessageStatus(String messageId) async {
-    ChatModel message =
-        await DatabaseManager.instance.findMessagesById(messageId);
-    if (message.sendStatus != 'SENDING') {
+    ChatModel message = await DatabaseManager.instance.findMessagesById(messageId);
+    var status = message.sendStatus;
+    if (message.sendStatus == 'FAILED' || message.sendStatus == 'SUCCESS') {
       List<ChatModel> messages = _messages;
       for (ChatModel chatModel in messages) {
         if (chatModel.messageId == messageId) {
@@ -182,6 +183,7 @@ class _ChatPageState extends State<ChatPage> {
         id: myUid,
         nickName: myNickName,
         avatar: myAvatar,
+        gender: '',
       ),
       content: Content(
         type: "TEXT",
@@ -204,7 +206,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _setMessageFailed(ChatModel chatModel) async {
-    print("========================send failed=========================");
     chatModel.sendStatus = 'FAILED';
     await DatabaseManager.instance.insertMessage(chatModel);
     _appendMessage(chatModel);
@@ -242,30 +243,18 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   Future<void> _fetchUserData() async {
-    try {
-      var combinedIds = widget.userIds.join(',');
-      final Map<String, String> params = {'id': combinedIds};
-      var response = await ApiService().get("/users", params: params);
-      if (response.statusCode == 200) {
-        var data = json.decode(response.body)['data'];
-        List<User> users =
-            List<User>.from(data.map((item) => User.fromMap(item)));
-        DatabaseManager.instance.insertOrUpdateUsers(users);
-        var uid = await ApiService().getUid();
-        if (uid != null) {
-          for (var userData in users) {
-            if (userData.id == uid) {
-              setState(() {
-                myUid = userData.id; // 确保数据中有 'id' 字段
-                myNickName = userData.nickName ?? '';
-                myAvatar = userData.avatar ?? '';
-              });
-            }
-          }
+    List<User> users = await DataCache().fetchUserData(widget.userIds);
+    var uid = await ApiService().getUid();
+    if (uid != null) {
+      for (var userData in users) {
+        if (userData.id == uid) {
+          setState(() {
+            myUid = userData.id; // 确保数据中有 'id' 字段
+            myNickName = userData.nickName ?? '';
+            myAvatar = userData.avatar ?? '';
+          });
         }
       }
-    } catch (e) {
-      print(e);
     }
   }
 

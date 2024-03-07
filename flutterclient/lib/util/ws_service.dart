@@ -85,15 +85,12 @@ class ChatService {
 
   void _connectWithRetry() async {
     var token = await ApiService().getToken();
-    print('===================token==========================$token');
     if (token == null || token == '') {
       return;
     }
     if (ApiService().isTokenExpired(token)) {
       await ApiService().refreshToken();
       var token = await ApiService().getToken();
-      print(
-          '===================token refresed==========================$token');
       if (token == null || token == '') {
         return;
       }

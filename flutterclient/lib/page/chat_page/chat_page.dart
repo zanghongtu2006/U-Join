@@ -3,21 +3,6 @@ import 'package:flutter/material.dart';
 import 'chat_list.dart';
 import 'contact_list_navigate.dart';
 
-// 假设的聊天模型
-class Chat {
-  final String avatarUrl;
-  final String name;
-  final String message;
-  final bool isOnline;
-
-  Chat({
-    required this.avatarUrl,
-    required this.name,
-    required this.message,
-    required this.isOnline,
-  });
-}
-
 class ChatListPage extends StatefulWidget {
   const ChatListPage({super.key});
 
@@ -33,11 +18,11 @@ class _ChatListPageState extends State<ChatListPage> {
     ContactListNavigateWidget(), // 通讯录列表Widget
   ];
 
-  // void _onItemTapped(int index) {
-  //   setState(() {
-  //     _selectedIndex = index;
-  //   });
-  // }
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -109,7 +94,10 @@ class _ChatListPageState extends State<ChatListPage> {
                 ),
               ),
               Expanded(
-                child: _pages.elementAt(_selectedIndex), // 显示选中的页面
+                child: IndexedStack(
+                  index: _selectedIndex,
+                  children: _pages,
+                ), // 显示选中的页面
               ),
             ],
           )

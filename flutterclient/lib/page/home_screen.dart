@@ -13,40 +13,60 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-  late final List<AnimationController> _controllers;
-  late final List<Animation<double>> _animations;
+  late PageController _pageController;
 
   // 底部导航栏中的各个页面
   final List<Widget> _pages = [
     const HomePage(),
     SocialPage(),
     SocialPage(),
-    const ChatListPage(),
+    ChatListPage(),
     const MinePage(),
   ];
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController();
     ChatService().initialize();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onPageChanged(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    // 这里可以添加页面切换时需要执行的任何数据加载逻辑
+    // 例如，根据_index重新加载页面内容
+  }
+
+  void _onItemTapped(int index) {
+    _pageController.jumpToPage(index);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ), // 使用IndexedStack来保持页面状态
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: _onPageChanged,
+        children: [
+          const HomePage(),
+          SocialPage(),
+          SocialPage(),
+          ChatListPage(),
+          const MinePage(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
-        onTap: (index) {
-          // 当点击不同的项时，更新当前索引
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+        onTap: _onItemTapped,
         items: [
           BottomNavigationBarItem(
             icon: _currentIndex == 0

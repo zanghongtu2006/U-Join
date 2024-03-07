@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 
 import 'contact_list.dart';
 
-class ContactListNavigateWidget extends StatelessWidget {
+class ContactListNavigateWidget extends StatefulWidget {
+  const ContactListNavigateWidget({super.key});
+
+  @override
+  _ContactListNavigateWidgetState createState() => _ContactListNavigateWidgetState();
+}
+
+class _ContactListNavigateWidgetState extends State<ContactListNavigateWidget> {
   @override
   Widget build(BuildContext context) {
     // 这里返回通讯录视图

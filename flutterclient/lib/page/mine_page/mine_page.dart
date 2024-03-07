@@ -48,7 +48,6 @@ class _MinePageState extends State<MinePage>
       var response = await ApiService().get("/mine");
       if (response.statusCode == 200) {
         var data = json.decode(response.body)['data'];
-        print(data);
         setState(() {
           id = data['id'] ?? ''; // 确保数据中有 'id' 字段
           nickname = data['nickName'] ?? '';

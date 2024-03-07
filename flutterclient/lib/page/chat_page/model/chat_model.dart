@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutterclient/page/chat_page/model/user_model.dart';
+
 class ChatModel {
   late String messageId;
   final String conversationId;
@@ -82,30 +84,6 @@ class ChatModel {
       // 需要处理Status.fromMap
       additionalInfo:
           AdditionalInfo.fromMap(jsonDecode(map['additionalInfo'])), // 同上
-    );
-  }
-}
-
-class User {
-  final String id;
-  final String nickName;
-  final String avatar;
-
-  User({required this.id, required this.nickName, required this.avatar});
-
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'nickName': nickName,
-      'avatar': avatar,
-    };
-  }
-
-  static User fromMap(Map<String, dynamic> map) {
-    return User(
-      id: map['id'],
-      nickName: map['nickName'],
-      avatar: map['avatar'],
     );
   }
 }

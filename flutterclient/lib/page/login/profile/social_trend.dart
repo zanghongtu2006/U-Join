@@ -41,7 +41,6 @@ class _SocialTrendPageState extends State<SocialTrendPage> {
     var response = await ApiService().get("/dicts/items", params: params);
     if (response.statusCode == 200) {
       var data = json.decode(response.body)['data'];
-      print(json.decode(response.body));
       // 处理SEXUAL数据
       List<Map<String, dynamic>> sexualData =
           List<Map<String, dynamic>>.from(data['SEXUAL']);
@@ -52,8 +51,6 @@ class _SocialTrendPageState extends State<SocialTrendPage> {
         newSexual.add(item['dictItemName']);
         newSexualCodeMap[item['dictItemName']] = item['dictItemCode'];
       }
-      print(newSexualCodeMap);
-
       // 处理RELATION_TYPE数据
       List<Map<String, dynamic>> relationTypeData =
           List<Map<String, dynamic>>.from(data['RELATION_TYPE']);
