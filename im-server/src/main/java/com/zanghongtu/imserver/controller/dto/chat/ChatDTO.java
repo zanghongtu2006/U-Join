@@ -1,5 +1,6 @@
 package com.zanghongtu.imserver.controller.dto.chat;
 
+import com.zanghongtu.imserver.controller.dto.ConversationDTO;
 import lombok.Data;
 
 @Data
@@ -29,4 +30,5 @@ public class ChatDTO {
 
     private AdditionalInfoDTO additionalInfo;
 
+    private ConversationDTO conversationDTO;
 }

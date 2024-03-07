@@ -17,4 +17,6 @@ public class UserInfoDTO {
 
     private String email;
 
+    private Gender gender;
+
 }

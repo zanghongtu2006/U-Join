@@ -1,5 +1,6 @@
-package com.zanghongtu.imserver.config;
+package com.zanghongtu.imserver.config.websocket;
 
+import com.zanghongtu.imserver.config.Constants;
 import com.zanghongtu.imserver.model.User;
 import com.zanghongtu.imserver.service.ITokenService;
 import lombok.extern.slf4j.Slf4j;

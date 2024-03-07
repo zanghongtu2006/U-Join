@@ -1,4 +1,4 @@
-package com.zanghongtu.imserver.config;
+package com.zanghongtu.imserver.config.websocket;
 
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;

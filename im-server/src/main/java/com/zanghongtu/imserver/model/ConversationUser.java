@@ -22,10 +22,13 @@ public class ConversationUser extends BaseEntity {
     @Column(columnDefinition = "tinyint(1) DEFAULT 0")
     private Boolean onTop;
 
+    @Column(columnDefinition = "TEXT")
     private String avatar;
 
+    @Column
     private String nickName;
 
+    @Column
     private ConversationType type;
 
 }

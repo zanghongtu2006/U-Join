@@ -11,6 +11,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,6 +47,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String token = extractToken(request);
                 if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     Map<String, String> map = tokenService.parseAccessToken(token);
+                    if (map == null) {
+                        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                        return;
+                    }
                     UserInfo userInfo = userInfoService.getById(map.get(Constants.USER_ID));
                     if (userInfo != null) {
                         ReqInfo reqInfo = new ReqInfo();
@@ -62,7 +68,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             } catch (AuthenticationException e) {
                 logger.error("AuthenticationException", e);
                 SecurityContextHolder.clearContext();
-                // 如果Token无效，可在这里处理异常，比如返回401状态码
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                return;
             }
         }
         filterChain.doFilter(request, response);

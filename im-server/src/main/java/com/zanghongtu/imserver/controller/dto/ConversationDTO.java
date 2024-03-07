@@ -1,8 +1,10 @@
 package com.zanghongtu.imserver.controller.dto;
 
 import com.zanghongtu.imserver.controller.dto.chat.ConversationType;
+import com.zanghongtu.imserver.controller.dto.user.Gender;
 import lombok.Data;
 
+import java.util.Date;
 import java.util.Set;
 
 @Data
@@ -21,5 +23,9 @@ public class ConversationDTO {
 
     private Set<String> userIds;
 
+    private Gender gender;
+
     private ConversationType type;
+
+    private Date lastUpdateTime;
 }

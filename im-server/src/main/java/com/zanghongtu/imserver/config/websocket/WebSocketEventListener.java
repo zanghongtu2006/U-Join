@@ -1,5 +1,6 @@
-package com.zanghongtu.imserver.config;
+package com.zanghongtu.imserver.config.websocket;
 
+import com.zanghongtu.imserver.config.Constants;
 import com.zanghongtu.imserver.mq.WebSocketSessionHandler;
 import com.zanghongtu.imserver.service.WebSocketSessionMappingService;
 import lombok.extern.slf4j.Slf4j;
@@ -58,19 +59,5 @@ public class WebSocketEventListener {
         System.out.println(userId + userId + userId);
         // 实现停止并销毁特定用户的RocketMQ消费者的逻辑
         // 这里的实现将依赖于您如何管理和引用这些消费者实例
-    }
-
-    @EventListener
-    public void handleSessionSubscribeEvent(SessionSubscribeEvent event) {
-        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        String destination = headerAccessor.getDestination();
-        System.out.println("New subscription: " + destination); // 或者使用日志记录器
-    }
-
-    @EventListener
-    public void handleSessionUnsubscribeEvent(SessionUnsubscribeEvent event) {
-        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        String destination = headerAccessor.getDestination();
-        System.out.println("Cancelled subscription: " + destination); // 或者使用日志记录器
     }
 }

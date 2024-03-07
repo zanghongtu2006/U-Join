@@ -4,7 +4,9 @@ import com.zanghongtu.imserver.controller.dto.ConversationDTO;
 import com.zanghongtu.imserver.controller.dto.chat.ConversationType;
 import com.zanghongtu.imserver.controller.dto.page.PageRequest;
 import com.zanghongtu.imserver.controller.dto.page.PageResponse;
+import com.zanghongtu.imserver.controller.dto.user.Gender;
 import com.zanghongtu.imserver.exception.PermitException;
+import com.zanghongtu.imserver.model.Conversation;
 import com.zanghongtu.imserver.model.ConversationUser;
 import com.zanghongtu.imserver.model.User;
 import com.zanghongtu.imserver.model.UserInfo;
@@ -14,6 +16,7 @@ import com.zanghongtu.imserver.service.IUserInfoService;
 import com.zanghongtu.imserver.threadlocal.ReqInfoOperator;
 import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -91,24 +94,55 @@ public class ConversationController extends BaseController {
         Map<String, Set<String>> conversationIdToUids = conversationUsers.stream()
                 .collect(Collectors.groupingBy(ConversationUser::getConversationId,
                         Collectors.mapping(ConversationUser::getUserId, Collectors.toSet())));
-
+        List<UserInfo> users = userInfoService.findAllById(conversationUsers.stream().map(ConversationUser::getUserId).collect(Collectors.toSet()));
+        Map<String, UserInfo> userInfoMap = users.stream().collect(
+                Collectors.toMap(UserInfo::getId, a -> a, (k1, k2) -> k1)
+        );
+        List<Conversation> conversations = conversationService.findAllByConversationIds(
+                conversationUsers.stream().map(ConversationUser::getConversationId).collect(Collectors.toSet())
+        );
+        Map<String, Conversation> conversationMap = conversations.stream().collect(
+                Collectors.toMap(Conversation::getConversationId, a -> a, (k1, k2) -> k1)
+        );
         List<ConversationDTO> dtos = new LinkedList<>();
         for (ConversationUser model : models) {
-            dtos.add(model2dto(model, conversationIdToUids.get(model.getConversationId())));
+            dtos.add(model2dto(conversationIdToUids.get(model.getConversationId()), userInfoMap, conversationMap.get(model.getConversationId())));
         }
         return dtos;
     }
 
-    private ConversationDTO model2dto(ConversationUser model, Set<String> userIds) {
+    private ConversationDTO model2dto(Set<String> userIds, Map<String, UserInfo> userInfoMap, Conversation conversation) {
         ConversationDTO dto = new ConversationDTO();
-        dto.setConversationId(model.getConversationId());
-        dto.setShortConversationId(model.getConversationId().substring(0, 8) + model.getConversationId().substring(32, 40));
-        dto.setAvatar(model.getAvatar());
-        dto.setNickName(model.getNickName());
-        dto.setType(model.getType());
-        dto.setLastMessage("hello world");
-        dto.setUnReadCount(4);
+        dto.setConversationId(conversation.getConversationId());
+        dto.setShortConversationId(conversation.getShortConversationId());
+        dto.setType(conversation.getType());
+        dto.setLastMessage(conversation.getLastMessage());
+        dto.setUnReadCount(conversation.getUnReadCount());
+        dto.setLastUpdateTime(conversation.getLastUpdateTime());
         dto.setUserIds(userIds);
+        if (conversation.getType() == ConversationType.PERSON) {
+            Optional<String> myUid = ReqInfoOperator.get().getUserId();
+            if (myUid.isPresent()) {
+                for (String uid : userIds) {
+                    if (!myUid.get().equals(uid)) {
+                        dto.setGender(userInfoMap.get(uid).getGender());
+                        dto.setAvatar(userInfoMap.get(uid).getAvatar());
+                        dto.setNickName(userInfoMap.get(uid).getNickName());
+                    }
+                }
+            }
+        } else if (conversation.getType() == ConversationType.SYSTEM) {
+            Optional<String> myUid = ReqInfoOperator.get().getUserId();
+            if (myUid.isPresent()) {
+                for (String uid : userIds) {
+                    if (!myUid.get().equals(uid)) {
+                        dto.setGender(Gender.FEMALE);
+                        dto.setAvatar(userInfoMap.get(uid).getAvatar());
+                        dto.setNickName(userInfoMap.get(uid).getNickName());
+                    }
+                }
+            }
+        }
         return dto;
     }
 }

@@ -1,5 +1,7 @@
-package com.zanghongtu.imserver.config;
+package com.zanghongtu.imserver.config.websocket;
 
+import com.zanghongtu.imserver.config.websocket.CustomHttpSessionHandshakeInterceptor;
+import com.zanghongtu.imserver.config.websocket.StompLoginInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
