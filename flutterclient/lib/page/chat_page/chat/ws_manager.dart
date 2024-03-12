@@ -8,18 +8,19 @@ import 'package:stomp_dart_client/stomp_frame.dart';
 
 class WsManager {
   static final WsManager _instance = WsManager._internal();
-
   factory WsManager() => _instance;
+  WsManager._internal();
 
   StompClient? _stompClient;
-
-  WsManager._internal();
 
   StompClient? getStompClient() {
     return _stompClient;
   }
 
+  bool connected = false;
+
   void _onConnectCallback(StompFrame frame) {
+    connected = true;
     // 连接成功的逻辑
     _stompClient?.send(
       destination: '/app/hello',
@@ -49,6 +50,7 @@ class WsManager {
   }
 
   void _onDisconnected(StompFrame frame) {
+    connected = false;
     print('Disconnected from WebSocket: ${frame.body}');
     // 断开后，延时重连
     Future.delayed(const Duration(seconds: 1), () {
@@ -57,11 +59,14 @@ class WsManager {
   }
 
   void _onWebSocketError(dynamic error) {
+    connected = false;
     print('WebSocketError from WebSocket: $error');
     ApiService().refreshToken();
+    _connectWithRetry();
   }
 
   void _onStompError(StompFrame frame) {
+    connected = false;
     print('Disconnected from WebSocket: ${frame.body}');
   }
 
@@ -84,7 +89,15 @@ class WsManager {
   }
 
   void _connectWithRetry() async {
+    if(connected) {
+      return;
+    }
+    // 如果已有连接活跃，先断开
+    if (_stompClient != null && _stompClient!.connected) {
+      _stompClient!.deactivate();
+    }
     var token = await ApiService().getToken();
+    print("--------------------connectwithretry====================$token");
     if (token == null || token == '') {
       return;
     }
@@ -94,10 +107,6 @@ class WsManager {
       if (token == null || token == '') {
         return;
       }
-    }
-    // 如果已有连接活跃，先断开
-    if (_stompClient != null && _stompClient!.connected) {
-      _stompClient!.deactivate();
     }
     _stompClient = StompClient(
       config: StompConfig.sockJS(

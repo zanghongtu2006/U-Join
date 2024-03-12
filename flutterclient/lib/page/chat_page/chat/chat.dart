@@ -20,6 +20,7 @@ import 'file_viewer/audio_player.dart';
 import 'file_viewer/file_util.dart';
 import 'file_viewer/image_viewer_fullscreen.dart';
 import 'file_viewer/video_player_widget.dart';
+import 'file_viewer/voice_input_widget.dart';
 
 class ChatPage extends StatefulWidget {
   final String conversationId;
@@ -130,8 +131,7 @@ class _ChatPageState extends State<ChatPage> {
     _timers[message.messageId] = Timer(const Duration(seconds: 15), () {
       _updateMessageStatus(message.messageId);
     });
-    ChatService.instance
-        .retrySendMessage(message, widget.shortConversationId, _appendMessage);
+    ChatService.instance.retrySendMessage(message, _appendMessage);
   }
 
   void _sendMessage(Message message) async {
@@ -156,7 +156,7 @@ class _ChatPageState extends State<ChatPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
       // 设置一个延时再次尝试滚动到底部
-      Future.delayed(const Duration(milliseconds: 500), () {
+      Future.delayed(const Duration(milliseconds: 2000), () {
         _scrollToBottom(); // 再次尝试滚动到底部
       });
     });
@@ -192,7 +192,8 @@ class _ChatPageState extends State<ChatPage> {
         'TEXT',
         messageText,
         '',
-        '');
+        '',
+        0);
     // 清除文本输入框
     _textController.clear();
     _sendMessage(message);
@@ -383,7 +384,7 @@ class _ChatPageState extends State<ChatPage> {
         );
       case 'AUDIO':
         return AudioPlayerWidget(
-            url: message.content.fileUrl, path: message.content.filePath);
+            url: message.content.fileUrl, path: message.content.filePath, duration: message.content.duration,);
       case 'VIDEO':
         return Container(
           constraints: const BoxConstraints(maxWidth: 200, maxHeight: 200),
@@ -414,8 +415,7 @@ class _ChatPageState extends State<ChatPage> {
         continue;
       }
       String extension = p.extension(media.path);
-      FileContent fileContent =
-          FileUtils.instance.getContentTypeFromExtension(extension);
+      FileContent fileContent = FileUtils.instance.getContentTypeFromExtension(extension);
       Message message = MessageUtil.instance.buildSendingMessage(
           widget.conversationId,
           widget.shortConversationId,
@@ -423,10 +423,26 @@ class _ChatPageState extends State<ChatPage> {
           fileContent.contentType,
           fileContent.contentText,
           media.path,
-          '');
+          '',0);
       fileMessagesToSend.add(message);
       _appendMessage(message);
     }
+    _copyAndSendFileMessage(fileMessagesToSend);
+  }
+
+  Future<void> _sendVoiceRecord(File voice, int duration) async {
+    Message message = MessageUtil.instance.buildSendingMessage(
+        widget.conversationId,
+        widget.shortConversationId,
+        mine,
+        'AUDIO',
+        '[语音]',
+        voice.path,
+        '',
+        duration);
+    _appendMessage(message);
+    List<Message> fileMessagesToSend = [];
+    fileMessagesToSend.add(message);
     _copyAndSendFileMessage(fileMessagesToSend);
   }
 
@@ -461,18 +477,13 @@ class _ChatPageState extends State<ChatPage> {
               }),
               Expanded(
                 child: _isRecording
-                    ? GestureDetector(
-                        onLongPress: () {
-                          // 开始录音
+                    ? VoiceInputWidget(
+                        onRecordingComplete: (File file, int duration) {
+                          // 在这里处理录音完成后的逻辑，例如上传录音文件
+                          // 或者将录音消息添加到聊天列表
+                          print("录音文件路径: ${file.path}");
+                          _sendVoiceRecord(file, duration);
                         },
-                        onLongPressUp: () {
-                          // 结束录音
-                        },
-                        child: Container(
-                          alignment: Alignment.center,
-                          height: 48,
-                          child: const Text('按住 说话'),
-                        ),
                       )
                     : TextField(
                         controller: _textController,

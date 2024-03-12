@@ -100,7 +100,7 @@ class MessageUtil {
   }
 
   Message buildSendingMessage(String conversationId, String shortConversationId, User sender,
-      String conentType, String contentText, String filePath, String fileUrl) {
+      String conentType, String contentText, String filePath, String fileUrl, int duration) {
     // 生成消息ID
     String messageId = ChatUtils.generateMessageId(shortConversationId);
     final message = Message(
@@ -120,6 +120,7 @@ class MessageUtil {
         text: contentText,
         filePath: filePath,
         fileUrl: fileUrl,
+        duration: duration,
       ),
       timestamp: DateTime.now(),
       messageType: "CHAT",

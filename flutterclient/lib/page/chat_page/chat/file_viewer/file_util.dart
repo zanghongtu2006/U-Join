@@ -32,12 +32,11 @@ class FileUtils {
 
   FileUtils._init();
 
-  Future<File> saveFileToDocumentsDirectory(File file, String extension) async {
+  Future<String> getTargetFilePath(String extension) async {
     // 生成UUID
     var uuid = const Uuid().v4();
     // 解析UUID以创建目录结构
-    String dirPath =
-        '${uuid[0]}/${uuid.substring(0, 2)}/${uuid.substring(0, 8)}';
+    String dirPath = '${uuid[0]}/${uuid.substring(0, 2)}/${uuid.substring(0, 8)}';
 
     // 获取文档目录并生成最终的保存路径
     Directory docDir = await getApplicationDocumentsDirectory();
@@ -46,13 +45,19 @@ class FileUtils {
     // 检查目录是否存在，不存在则创建
     final directory = Directory(fullPath);
     if (!await directory.exists()) {
-      await directory.create(recursive: true);
+    await directory.create(recursive: true);
     }
     // 定义文件的最终路径（包括新的文件名）
     String filePath = p.join(fullPath, "$uuid$extension");
+    return filePath;
+  }
 
-    // 复制文件到新路径
-    return await file.copy(filePath);
+  Future<File?> saveFileToDocumentsDirectory(File file, String extension) async {
+    String? filePath = await getTargetFilePath(extension);
+    if (filePath.isNotEmpty) {
+      return await file.copy(filePath);
+    }
+    return null;
   }
 
   Future<List<File>> directlyOpenFilePicker() async {
@@ -71,14 +76,21 @@ class FileUtils {
     print("Upload file: ${file.path}");
     String extension = p.extension(file.path);
     try {
-      File savedFile = await saveFileToDocumentsDirectory(file, extension);
-      String fileUrl = 'AfterUploaded$extension';
-      FileModel fileModel = FileModel(file: savedFile, uploadedUrl: fileUrl);
-      return fileModel;
+      File? savedFile = await saveFileToDocumentsDirectory(file, extension);
+      if (savedFile != null) {
+        String fileUrl = await sendFile(savedFile);
+        FileModel fileModel = FileModel(file: savedFile, uploadedUrl: fileUrl);
+        return fileModel;
+      }
     } catch (e) {
       print(e);
     }
     return null;
+  }
+
+  Future<String> sendFile(File file) async {
+    String extension = p.extension(file.path);
+    return 'AfterUploaded$extension';
   }
 
   FileContent getContentTypeFromExtension(String extension) {
@@ -104,6 +116,11 @@ class FileUtils {
             fileType: FileType.audio,
             contentType: 'AUDIO',
             contentText: '[音频]');
+      case '.aac':
+        return FileContent(
+            fileType: FileType.audio,
+            contentType: 'AUDIO',
+            contentText: '[语音]');
       default:
         return FileContent(
             fileType: FileType.custom,

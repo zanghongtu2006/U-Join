@@ -93,8 +93,9 @@ class Content {
   late String text;
   late String filePath;
   late String fileUrl;
+  late int duration;//时长：秒
 
-  Content({required this.type, this.text = '', this.filePath='',this.fileUrl=''});
+  Content({required this.type, this.text = '', this.filePath='',this.fileUrl='', this.duration=0});
 
   Map<String, dynamic> toMap() {
     return {
@@ -102,6 +103,7 @@ class Content {
       'text': text,
       'filePath': filePath,
       'fileUrl': fileUrl,
+      'duration': duration,
     };
   }
 
@@ -111,6 +113,7 @@ class Content {
       text: map['text'],
       filePath: map['filePath'],
       fileUrl: map['fileUrl'],
+      duration: map['duration']??0,
     );
   }
 }
