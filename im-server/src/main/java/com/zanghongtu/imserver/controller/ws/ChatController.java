@@ -48,14 +48,20 @@ public class ChatController {
 
     private static Conversation getConversation(ChatDTO chatDTO, Conversation conversation) {
         switch (chatDTO.getContent().getType()) {
-            case TEXT:
-                conversation.setLastMessage(chatDTO.getContent().getText());
-                break;
             case IMAGE:
                 conversation.setLastMessage("[图片]");
                 break;
             case RED_ENVELOPE:
                 conversation.setLastMessage("[红包]");
+                break;
+            case AUDIO:
+                conversation.setLastMessage("[音频]");
+                break;
+            case VIDEO:
+                conversation.setLastMessage("[视频]");
+                break;
+            default:
+                conversation.setLastMessage(chatDTO.getContent().getText());
                 break;
         }
         conversation.setLastUpdateTime(new Date(chatDTO.getTimestamp()));

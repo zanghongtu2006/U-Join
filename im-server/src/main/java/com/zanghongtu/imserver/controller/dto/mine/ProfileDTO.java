@@ -14,6 +14,8 @@ import java.util.stream.Stream;
 public class ProfileDTO {
     private String id;
 
+    private String fullName;
+
     private String nickName;
 
     private String avatar;

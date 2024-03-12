@@ -45,7 +45,6 @@ public class MineController {
             UserInfo userInfo = userInfoService.getById(uid.get());
             BeanUtils.copyProperties(userInfo, profileDTO);
             profileDTO.setNickName(userInfo.getNickName());
-            profileDTO.setId(userInfo.getFullName());
         }
         return profileDTO;
     }

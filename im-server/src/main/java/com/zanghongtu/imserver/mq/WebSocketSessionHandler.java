@@ -94,6 +94,6 @@ public class WebSocketSessionHandler {
         ChatDTO chatDTO = JSON.parseObject(message, ChatDTO.class);
         chatDTO.setStatus(null);
         simpUserRegistry.getUsers();
-        messagingTemplate.convertAndSendToUser(webSocketSessionMappingService.getSessionId(tags), "/topic/chat-reply", chatDTO);
+        messagingTemplate.convertAndSendToUser(webSocketSessionMappingService.getSessionId(tags), "/topic/chat", chatDTO);
     }
 }

@@ -27,7 +27,7 @@ public class TokenServiceImpl implements ITokenService {
     public TokenDTO generateToken(UserInfo user, String sessionId) {
         Date issuedAt = new Date();
         Date accessExpiration = new Date(issuedAt.getTime() + tokenConfig.getAccessTokenExpireTime());
-        Date refreshExpiration = new Date(issuedAt.getTime() + tokenConfig.getRefreshTokenExpireTime() * 86400 * 24);
+        Date refreshExpiration = new Date(issuedAt.getTime() + tokenConfig.getRefreshTokenExpireTime() * 86400000 * 24);
         String accessToken = generateAccessToken(user, sessionId, issuedAt, accessExpiration);
         String refreshToken = generateRefreshToken(user, sessionId, issuedAt, refreshExpiration);
         TokenDTO tokenDTO = new TokenDTO();

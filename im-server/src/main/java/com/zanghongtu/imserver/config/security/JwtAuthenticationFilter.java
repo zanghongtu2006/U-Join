@@ -18,6 +18,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -42,12 +43,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         String requestUri = request.getRequestURI();
-        if (!requestUri.startsWith("/chatserver") && !requestUri.endsWith(".html") && !requestUri.endsWith(".ico")) {
+        if (!requestUri.startsWith("/chatserver") && !requestUri.endsWith(".html") && !requestUri.endsWith(".ico") &&
+        !requestUri.startsWith("/token")) {
             try {
                 String token = extractToken(request);
                 if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     Map<String, String> map = tokenService.parseAccessToken(token);
-                    if (map == null) {
+                    if (CollectionUtils.isEmpty(map)) {
                         response.setStatus(HttpStatus.UNAUTHORIZED.value());
                         return;
                     }

@@ -6,5 +6,7 @@ import lombok.Getter;
 public enum ContentType {
     TEXT,
     IMAGE,
+    VIDEO,
+    AUDIO,
     RED_ENVELOPE
 }

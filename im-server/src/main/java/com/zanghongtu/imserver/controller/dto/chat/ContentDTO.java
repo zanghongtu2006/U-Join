@@ -10,4 +10,8 @@ public class ContentDTO {
      * chat message content
      */
     private String text;
+
+    private String filePath;
+
+    private String fileUrl;
 }
