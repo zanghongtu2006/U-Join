@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/social_page/social_page.dart';
 
-import '../util/ws_service.dart';
+import 'chat_page/chat/ws_manager.dart';
 import 'chat_page/chat_page.dart';
 import 'home_page/home_page.dart';
 import 'mine_page/mine_page.dart';
@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
-    ChatService().initialize();
+    WsManager().initialize();
   }
 
   @override

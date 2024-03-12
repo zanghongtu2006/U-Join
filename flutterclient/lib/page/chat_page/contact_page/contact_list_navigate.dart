@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'contact_list.dart';
 
+
 class ContactListNavigateWidget extends StatefulWidget {
   const ContactListNavigateWidget({super.key});
 

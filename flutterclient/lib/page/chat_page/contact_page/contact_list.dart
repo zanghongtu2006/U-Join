@@ -5,16 +5,20 @@ import 'contact_bottom_sheet_content.dart';
 class ContactListPage extends StatelessWidget {
   final String filter;
 
-  const ContactListPage({Key? key, required this.filter}) : super(key: key);
+  const ContactListPage({Key? key, required this.filter})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [Text(filter)],
-      )),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(filter),
+          ],
+        ),
+      ),
       body: ListView.separated(
         itemCount: 10, // 假设有10个联系人
         itemBuilder: (context, index) {

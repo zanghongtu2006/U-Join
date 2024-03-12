@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/button/logo_button.dart';
-import 'package:flutterclient/page/chat_page/chat.dart';
+import 'package:flutterclient/page/chat_page/chat/chat.dart';
 
 class PostCard extends StatelessWidget {
   final String avatar;

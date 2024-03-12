@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutterclient/page/chat_page/model/user_model.dart';
 
-class ChatModel {
+class Message {
   late String messageId;
   final String conversationId;
   final String shortConversationId;
@@ -17,7 +17,7 @@ class ChatModel {
   late String sendStatus; //SENDING,SUCCESS,FAILED
   final AdditionalInfo additionalInfo;
 
-  ChatModel({
+  Message({
     required this.messageId,
     required this.isMe,
     required this.senderId,
@@ -66,8 +66,8 @@ class ChatModel {
     };
   }
 
-  static ChatModel fromMap(Map<String, dynamic> map) {
-    return ChatModel(
+  static Message fromMap(Map<String, dynamic> map) {
+    return Message(
       messageId: map['messageId'],
       conversationId: map['conversationId'],
       shortConversationId: map['shortConversationId'],
@@ -90,14 +90,18 @@ class ChatModel {
 
 class Content {
   final String type;
-  final String text;
+  late String text;
+  late String filePath;
+  late String fileUrl;
 
-  Content({required this.type, required this.text});
+  Content({required this.type, this.text = '', this.filePath='',this.fileUrl=''});
 
   Map<String, dynamic> toMap() {
     return {
       'type': type,
       'text': text,
+      'filePath': filePath,
+      'fileUrl': fileUrl,
     };
   }
 
@@ -105,6 +109,8 @@ class Content {
     return Content(
       type: map['type'],
       text: map['text'],
+      filePath: map['filePath'],
+      fileUrl: map['fileUrl'],
     );
   }
 }

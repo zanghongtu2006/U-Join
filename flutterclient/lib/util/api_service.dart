@@ -58,8 +58,7 @@ class ApiService {
       var result = json.decode(response.body);
       print(result['data']);
       // 存储token
-      await setToken(
-          result['data']['access-token'], result['data']['refresh-token'], result['data']['userId']);
+      await setToken(result['data']['access-token'], result['data']['refresh-token'], result['data']['userId']);
       return true;
     } else {
       var statusCode = response.statusCode;
@@ -91,7 +90,7 @@ class ApiService {
     });
 
     return _handleResponse(response, endpoint,
-        headers: headers, data: params, method: 'PUT');
+        headers: headers, data: params, method: 'GET');
   }
 
   Future<http.Response> post(String endpoint, dynamic data) async {
@@ -100,18 +99,16 @@ class ApiService {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
     };
-    final response = await http
-        .post(
+    final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
       headers: headers,
       body: json.encode(data),
-    )
-        .timeout(Duration(seconds: timeout), onTimeout: () {
+    ).timeout(Duration(seconds: timeout), onTimeout: () {
       return http.Response(json.encode({'code': 408, 'msg': 'TIMEOUT'}), 408);
     });
 
     return _handleResponse(response, endpoint,
-        headers: headers, data: data, method: 'PUT');
+        headers: headers, data: data, method: 'POST');
   }
 
   Future<http.Response> put(String endpoint, dynamic data) async {

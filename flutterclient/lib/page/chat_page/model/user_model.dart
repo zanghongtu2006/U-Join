@@ -1,8 +1,8 @@
 class User {
-  final String id;
-  final String nickName;
-  final String avatar;
-  final String gender;
+  late String id;
+  late String nickName;
+  late String avatar;
+  late String gender;
 
   User({required this.id, required this.nickName, required this.avatar, required this.gender});
 

@@ -1,19 +1,19 @@
 import 'dart:convert';
 
 import 'package:flutterclient/util/api_service.dart';
-import 'package:flutterclient/util/message_util.dart';
+import 'package:flutterclient/page/chat_page/chat/message_util.dart';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
-class ChatService {
-  static final ChatService _instance = ChatService._internal();
+class WsManager {
+  static final WsManager _instance = WsManager._internal();
 
-  factory ChatService() => _instance;
+  factory WsManager() => _instance;
 
   StompClient? _stompClient;
 
-  ChatService._internal();
+  WsManager._internal();
 
   StompClient? getStompClient() {
     return _stompClient;
@@ -35,12 +35,12 @@ class ChatService {
       },
     );
     _stompClient?.subscribe(
-      destination: '/user/topic/chat-reply',
+      destination: '/user/topic/chat',
       callback: (StompFrame frame) async {
         if (frame.body != null) {
           // 处理收到的消息
           String? body = frame.body;
-          print('======Chat reply: $body');
+          print('======Chat received: $body');
           String? uid = await ApiService().getUid();
           MessageUtil.instance.dealReceived(body!, uid!);
         }

@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/mine_page/social_status.dart';
 import 'package:flutterclient/util/api_service.dart';
+import 'package:flutterclient/util/db_manager.dart';
 
+import '../chat_page/model/user_model.dart';
 import 'common_function.dart';
 import 'task_center.dart';
 import 'user_info.dart';
@@ -22,6 +24,7 @@ class _MinePageState extends State<MinePage>
   bool get wantKeepAlive => true;
 
   String id = "";
+  String fullName = "";
   String nickname = '';
   String avatar = '';
   String gender = "";
@@ -49,9 +52,11 @@ class _MinePageState extends State<MinePage>
       if (response.statusCode == 200) {
         var data = json.decode(response.body)['data'];
         setState(() {
-          id = data['id'] ?? ''; // 确保数据中有 'id' 字段
+          id = data['id'] ?? '';
+          fullName = data['fullName'];
           nickname = data['nickName'] ?? '';
           avatar = data['avatar'] ?? '';
+          gender = data['gender'] ?? 'UNKNOWN';
           level = data['level'] ?? ''; // 确保数据中有 'level' 字段，并且它是一个整数
           receivedStatus = List<int>.from(data['taskStatus']);
           status = data['status'] ?? 'REGISTERD';
@@ -59,6 +64,10 @@ class _MinePageState extends State<MinePage>
           focusCount = data['focusCount'] ?? 0;
           visitorsCount = data['visitorsCount'] ?? 0;
         });
+          User user = User(id: data['id'],nickName: data['nickName'],avatar: data['avatar'] ,gender:data['gender'] ?? 'UNKNOWN' );
+        List<User> users = [user];
+        print(users[0].avatar);
+        DatabaseManager.instance.insertOrUpdateUsers(users);
       }
     } catch (e) {
       print(e);
@@ -80,7 +89,7 @@ class _MinePageState extends State<MinePage>
           child: ListView(
             children: <Widget>[
               UserInformationSection(
-                  id: id, nickname: nickname, avatar: avatar, level: level),
+                  id: fullName, nickname: nickname, avatar: avatar, level: level),
               SocialStatusTabView(fansCount:fansCount,focusCount:focusCount,visitorsCount:visitorsCount),
               WalletAndStoreButtons(),
               const TaskCenterSection(),

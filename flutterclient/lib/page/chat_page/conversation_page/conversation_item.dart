@@ -3,7 +3,7 @@ import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import 'chat.dart';
+import '../chat/chat.dart';
 
 class ChatListItem extends StatefulWidget {
   final String conversationId;

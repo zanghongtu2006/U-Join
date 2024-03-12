@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
-import '../../util/data_cache.dart';
-import 'chat_item.dart';
-import 'model/conversation_model.dart';
+import '../../../util/data_cache.dart';
+import 'conversation_item.dart';
+import '../model/conversation_model.dart';
 
 class ChatListWidget extends StatefulWidget {
   const ChatListWidget({super.key});
@@ -19,7 +19,7 @@ class _ChatListWidgetState extends State<ChatListWidget> with WidgetsBindingObse
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _fetchContacts();
+    _fetchConversations();
   }
 
   @override
@@ -34,14 +34,14 @@ class _ChatListWidgetState extends State<ChatListWidget> with WidgetsBindingObse
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
       // 当应用或页面重新获得焦点时，刷新聊天列表
-      _fetchContacts();
+      _fetchConversations();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: _fetchContacts,
+      onRefresh: _fetchConversations,
       child: ListView.separated(
         itemCount: contacts.length,
         itemBuilder: (context, index) {
@@ -71,7 +71,7 @@ class _ChatListWidgetState extends State<ChatListWidget> with WidgetsBindingObse
               lastUpdateTime: contact.lastUpdateTime,
               isOnline: true,
               onChatClosed: () {
-                _fetchContacts(); // 当从聊天页面返回时调用
+                _fetchConversations(); // 当从聊天页面返回时调用
               },
             ),
           );
@@ -118,8 +118,7 @@ class _ChatListWidgetState extends State<ChatListWidget> with WidgetsBindingObse
     );
   }
 
-  Future<void> _fetchContacts() async {
-    print("=========_fetchContacts");
+  Future<void> _fetchConversations() async {
     try {
       List<Conversation> conversations = await DataCache().fetchConversations(1, 20);
       setState(() {

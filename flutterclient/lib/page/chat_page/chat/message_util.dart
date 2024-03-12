@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutterclient/util/ws_service.dart';
+import 'package:flutterclient/page/chat_page/chat/ws_manager.dart';
 
-import '../page/chat_page/model/chat_model.dart';
-import '../page/chat_page/model/conversation_model.dart';
-import 'db_manager.dart';
+import '../model/chat_model.dart';
+import '../model/conversation_model.dart';
+import '../model/user_model.dart';
+import '../../../util/chat_util.dart';
+import '../../../util/db_manager.dart';
 
 class MessageUtil {
   final Map<String, Timer> _timers = {};
@@ -13,27 +15,24 @@ class MessageUtil {
   MessageUtil._internal();
   static MessageUtil get instance => _instance;
 
-  Future<bool> sendMessage(ChatModel chatModel) async {
+  Future<bool> sendMessage(Message message) async {
+    print("sending");
     String destination = '/app/chat';
-    await DatabaseManager.instance.insertMessage(chatModel);
-    return ChatService().sendMessage(destination, jsonEncode(chatModel.toSendMap()));
+    await DatabaseManager.instance.insertMessage(message);
+    return WsManager().sendMessage(destination, jsonEncode(message.toSendMap()));
   }
 
-  void putMessageTimers(ChatModel chatModel) {
-    _timers[chatModel.messageId] = Timer(const Duration(seconds: 15), () {
+  void putMessageTimers(Message chatModel) {
+    _timers[chatModel.messageId] = Timer(const Duration(seconds: 10), () {
       _setMessageFailed(chatModel);
     });
   }
 
-  Future<void> _setMessageFailed(ChatModel chatModel) async {
+  Future<void> _setMessageFailed(Message chatModel) async {
     chatModel.sendStatus = 'FAILED';
     await DatabaseManager.instance.insertMessage(chatModel);
     _timers[chatModel.messageId]?.cancel();
     _timers.remove(chatModel.messageId);
-  }
-
-  void removeMessageTimers(String messageId) {
-    _removeMessageTimers(messageId);
   }
 
   void _removeMessageTimers(String messageId) {
@@ -41,11 +40,11 @@ class MessageUtil {
     _timers.remove(messageId);
   }
 
-  Future<ChatModel?> dealReceived(String msg, String myUid) async {
+  Future<Message?> dealReceived(String msg, String myUid) async {
     Map<String, dynamic> messageData = json.decode(msg);
     if (messageData['messageType'] == 'CHAT_REPLY') {
       String replyToMessageId = messageData['additionalInfo']['replyToMessageId'];
-      ChatModel message = await DatabaseManager.instance.findMessagesById(replyToMessageId);
+      Message message = await DatabaseManager.instance.findMessagesById(replyToMessageId);
       message.sendStatus = 'SUCCESS';
       DatabaseManager.instance.insertMessage(message);
       _removeMessageTimers(replyToMessageId);
@@ -66,7 +65,7 @@ class MessageUtil {
           sendTime: DateTime.fromMillisecondsSinceEpoch(messageData['timestamp'])
         );
       }
-      final message = ChatModel(
+      final message = Message(
         messageId: messageData['messageId'],
         conversationId: messageData['conversationId'],
         shortConversationId: messageData['shortConversationId'],
@@ -75,6 +74,8 @@ class MessageUtil {
         content: Content(
           type: messageData['content']['type'],
           text: messageData['content']['text'],
+          filePath: messageData['content']['filePath'],
+          fileUrl: messageData['content']['fileUrl'],
         ),
         timestamp: DateTime.fromMillisecondsSinceEpoch(messageData['timestamp']),
         messageType: messageData['messageType'],
@@ -91,8 +92,46 @@ class MessageUtil {
       DatabaseManager.instance.insertMessage(message);
       DatabaseManager.instance.insertConversation(conversation);
       _removeMessageTimers(messageData['messageId']);
-      return message;
+      if(!isMe) {
+        return message;
+      }
     }
     return null;
+  }
+
+  Message buildSendingMessage(String conversationId, String shortConversationId, User sender,
+      String conentType, String contentText, String filePath, String fileUrl) {
+    // 生成消息ID
+    String messageId = ChatUtils.generateMessageId(shortConversationId);
+    final message = Message(
+      messageId: messageId,
+      conversationId: conversationId,
+      shortConversationId: shortConversationId,
+      isMe: true,
+      senderId: sender.id,
+      sender: User(
+        id: sender.id,
+        nickName: sender.nickName,
+        avatar: sender.avatar,
+        gender: sender.gender,
+      ),
+      content: Content(
+        type: conentType,
+        text: contentText,
+        filePath: filePath,
+        fileUrl: fileUrl,
+      ),
+      timestamp: DateTime.now(),
+      messageType: "CHAT",
+      status: Status(
+        read: true,
+        sendTime: DateTime.now(),
+      ),
+      sendStatus: "SENDING",
+      additionalInfo: AdditionalInfo(
+        replyToMessageId: "",
+      ),
+    );
+    return message;
   }
 }

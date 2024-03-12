@@ -82,7 +82,7 @@ class DatabaseManager {
   }
 
   //Message
-  Future<void> insertMessage(ChatModel chatModel) async {
+  Future<void> insertMessage(Message chatModel) async {
     final db = await instance.database;
     await db.insert(
       'messages',
@@ -91,7 +91,7 @@ class DatabaseManager {
     );
   }
 
-  Future<ChatModel> findMessagesById(String messageId) async {
+  Future<Message> findMessagesById(String messageId) async {
     final db = await instance.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'messages',
@@ -101,23 +101,24 @@ class DatabaseManager {
 
     // 将查询结果的每个Map转换为ChatModel
     return List.generate(maps.length, (i) {
-      return ChatModel.fromMap(maps[i]);
+      return Message.fromMap(maps[i]);
     }).reversed.toList().first; // 确保消息按时间升序排列
   }
 
-  Future<List<ChatModel>> findMessagesByConversationId(String conversationId) async {
+  Future<List<Message>> findMessagesByConversationId(String conversationId, int offset) async {
     final db = await instance.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'messages',
       where: 'conversationId = ?',
       whereArgs: [conversationId],
       orderBy: 'messageId DESC',
-      limit: 50,
+      limit: 20,
+      offset: offset
     );
 
     // 将查询结果的每个Map转换为ChatModel
     return List.generate(maps.length, (i) {
-      return ChatModel.fromMap(maps[i]);
+      return Message.fromMap(maps[i]);
     }).reversed.toList(); // 确保消息按时间升序排列
   }
 
@@ -165,6 +166,7 @@ class DatabaseManager {
   Future<void> insertOrUpdateUsers(List<User> users) async {
     final db = await instance.database;
     for (var user in users) {
+      print(user.toMap());
       await db.insert(
         'users',
         user.toMap(),

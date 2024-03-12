@@ -26,19 +26,22 @@ class DataCache {
     return users;
   }
 
-  Future<List<Conversation>> fetchConversations(int page, int pageSize) async {
-    List<Conversation> conversations = [];
+  Future<void> _fetchConversaionsFromServer(int page, int pageSize) async {
     try {
       var response = await ApiService().get("/conversations/latest");
       if (response.statusCode == 200) {
         var data = json.decode(response.body)['data']['rows'];
-        conversations = List<Conversation>.from(
-            data.map((item) => Conversation.fromMap(item)));
+        List<Conversation> conversations = List<Conversation>.from(data.map((item) => Conversation.fromMap(item)));
         DatabaseManager.instance.insertOrUpdateConversations(conversations);
       }
     } catch (e) {
       print("fetchConversations===$e");
     }
+  }
+
+  Future<List<Conversation>> fetchConversations(int page, int pageSize) async {
+    List<Conversation> conversations = [];
+    _fetchConversaionsFromServer(page, pageSize);
     // fetch from db
     int offset = (page - 1) * pageSize;
     conversations = await DatabaseManager.instance.listConversations(offset, pageSize);

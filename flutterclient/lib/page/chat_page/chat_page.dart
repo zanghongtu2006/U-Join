@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'chat_list.dart';
-import 'contact_list_navigate.dart';
+import 'conversation_page/conversation_list.dart';
+import 'contact_page/contact_list_navigate.dart';
 
 class ChatListPage extends StatefulWidget {
   const ChatListPage({super.key});

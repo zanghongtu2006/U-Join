@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../chat_page/contact_list.dart';
+import '../chat_page/contact_page/contact_list.dart';
+
 
 class SocialStatusTabView extends StatefulWidget {
   int fansCount = 0;

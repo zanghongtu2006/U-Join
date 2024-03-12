@@ -1,18 +1,25 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutterclient/page/chat_page/chat/chat_service.dart';
+import 'package:flutterclient/page/chat_page/chat/message_util.dart';
+import 'package:flutterclient/page/chat_page/chat/ws_manager.dart';
 import 'package:flutterclient/page/chat_page/model/chat_model.dart';
 import 'package:flutterclient/util/data_cache.dart';
-import 'package:flutterclient/util/message_util.dart';
-import 'package:flutterclient/util/ws_service.dart';
+import 'package:oktoast/oktoast.dart';
+import 'package:path/path.dart' as p;
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 import 'package:stomp_dart_client/stomp_handler.dart';
 
-import '../../util/api_service.dart';
-import '../../util/chat_util.dart';
-import '../../util/db_manager.dart';
-import 'model/user_model.dart';
+import '../../../util/api_service.dart';
+import '../../../util/db_manager.dart';
+import '../model/user_model.dart';
+import 'file_viewer/audio_player.dart';
+import 'file_viewer/file_util.dart';
+import 'file_viewer/image_viewer_fullscreen.dart';
+import 'file_viewer/video_player_widget.dart';
 
 class ChatPage extends StatefulWidget {
   final String conversationId;
@@ -35,17 +42,17 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final Map<String, Timer> _timers = {};
   final TextEditingController _textController = TextEditingController();
   bool _isRecording = false;
   bool _isPanelExpanded = false; // 用于控制面板展开/收缩的状态
   final ScrollController _scrollController = ScrollController();
-  StompUnsubscribe? _unsubscribe; // 这是订阅的标识符
+  StompUnsubscribe? _unsubscribeReply; // 这是订阅的标识符
+  StompUnsubscribe? _unsubscribeChat; // 这是订阅的标识符
 
-  late String myUid;
-  late String myAvatar;
-  late String myNickName;
-  late List<ChatModel> _messages = [];
+  final Map<String, Timer> _timers = {};
+  late User mine;
+  late List<Message> _messages = [];
+  late Map<String, User> _userMap = {};
 
   @override
   void initState() {
@@ -58,18 +65,23 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void dispose() {
     // 取消订阅
-    _unsubscribe?.call();
-    for (String key in _timers.keys) {
-      _timers[key]?.cancel();
-      _timers.remove(key);
+    _unsubscribeReply?.call();
+    _unsubscribeChat?.call();
+    if (_timers.isNotEmpty) {
+      var keysToCancel = _timers.keys.toList();
+      // 遍历键，取消并移除计时器
+      for (String key in keysToCancel) {
+        _timers[key]?.cancel();
+        _timers.remove(key);
+      }
     }
     super.dispose();
   }
 
   void _subscribeTopic() {
-    StompClient? stompClient = ChatService().getStompClient();
+    StompClient? stompClient = WsManager().getStompClient();
     if (stompClient != null && stompClient.connected) {
-      _unsubscribe = stompClient.subscribe(
+      _unsubscribeReply = stompClient.subscribe(
         destination: '/user/topic/chat-reply',
         callback: (StompFrame frame) async {
           if (frame.body != null) {
@@ -77,10 +89,27 @@ class _ChatPageState extends State<ChatPage> {
             String? body = frame.body;
             print('Chat reply: $body');
             if (body != null) {
-              ChatModel? message =
-                  await MessageUtil.instance.dealReceived(body, myUid);
+              Message? message =
+                  await MessageUtil.instance.dealReceived(body, mine.id);
               if (message != null) {
-                _loadMessages();
+                _updateMessage(message);
+              }
+            }
+          }
+        },
+      );
+      _unsubscribeChat = stompClient.subscribe(
+        destination: '/user/topic/chat',
+        callback: (StompFrame frame) async {
+          if (frame.body != null) {
+            // 处理收到的消息
+            String? body = frame.body;
+            print('Chat received: $body');
+            if (body != null) {
+              Message? message =
+                  await MessageUtil.instance.dealReceived(body, mine.id);
+              if (message != null) {
+                _appendMessage(message);
               }
             }
           }
@@ -89,169 +118,151 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  void _retrySendMessage(ChatModel chatModel) async {
-    await DatabaseManager.instance.deleteMessage(chatModel.messageId);
-    _removeMessage(chatModel.messageId);
-    String messageId = ChatUtils.generateMessageId(widget.shortConversationId);
-    chatModel.messageId = messageId;
-    chatModel.timestamp = DateTime.now();
-    chatModel.status = Status(
-      read: true,
-      sendTime: DateTime.now(),
-    );
-    chatModel.sendStatus = "SENDING";
-    _sendMessage(chatModel);
+  void _removeMessage(Message message) {
+    setState(() {
+      _messages
+          .removeWhere((element) => element.messageId == message.messageId);
+    });
   }
 
-  void _removeMessage(String messageId) {
+  void _retrySendMessage(Message message) {
+    _removeMessage(message);
+    _timers[message.messageId] = Timer(const Duration(seconds: 15), () {
+      _updateMessageStatus(message.messageId);
+    });
+    ChatService.instance
+        .retrySendMessage(message, widget.shortConversationId, _appendMessage);
+  }
+
+  void _sendMessage(Message message) async {
+    _timers[message.messageId] = Timer(const Duration(seconds: 15), () {
+      _updateMessageStatus(message.messageId);
+    });
+    ChatService.instance.sendMessage(message, _appendMessage);
+  }
+
+  void _sendFileMessage(Message message) async {
+    _timers[message.messageId] = Timer(const Duration(seconds: 15), () {
+      _updateMessageStatus(message.messageId);
+    });
+    ChatService.instance.sendFileMessage(message, _updateFileMessage);
+  }
+
+  void _appendMessage(Message message) {
     setState(() {
-      _messages.removeWhere((element) => element.messageId == messageId);
+      _messages.add(message);
     });
     // 等待列表更新完成
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
-  void _appendMessage(ChatModel chatModel) {
-    setState(() {
-      _messages.add(chatModel);
-    });
-    // 等待列表更新完成
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
-  void _sendMessage(ChatModel chatModel) async {
-    bool sendResult = await MessageUtil.instance.sendMessage(chatModel);
-    if (!sendResult) {
-      _setMessageFailed(chatModel);
-    } else {
-      _appendMessage(chatModel);
-      _timers[chatModel.messageId] = Timer.periodic(const Duration(seconds: 1), (Timer t) {
-        _updateMessageStatus(chatModel.messageId);
+      _scrollToBottom();
+      // 设置一个延时再次尝试滚动到底部
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _scrollToBottom(); // 再次尝试滚动到底部
       });
-      // 设置定时器，在5秒后检查是否收到反馈
-      MessageUtil.instance.putMessageTimers(chatModel);
+    });
+  }
+
+  void _updateFileMessage() {}
+
+  Future<void> _updateMessage(Message message) async {
+    int indexToUpdate =
+        _messages.indexWhere((msg) => msg.messageId == message.messageId);
+    if (indexToUpdate != -1) {
+      setState(() {
+        _messages[indexToUpdate] = message;
+      });
     }
   }
 
   Future<void> _updateMessageStatus(String messageId) async {
-    ChatModel message = await DatabaseManager.instance.findMessagesById(messageId);
-    var status = message.sendStatus;
-    if (message.sendStatus == 'FAILED' || message.sendStatus == 'SUCCESS') {
-      List<ChatModel> messages = _messages;
-      for (ChatModel chatModel in messages) {
-        if (chatModel.messageId == messageId) {
-          chatModel.sendStatus = message.sendStatus;
-        }
-      }
-      setState(() {
-        _messages = messages;
-      });
-      _timers[messageId]?.cancel();
-      _timers.remove(messageId);
-    }
+    Message message =
+        await DatabaseManager.instance.findMessagesById(messageId);
+    _updateMessage(message);
+    _timers[messageId]?.cancel();
+    _timers.remove(messageId);
   }
 
   void _onSendButtonPressed() async {
     // 消息文本
     String messageText = _textController.text;
-    // 生成消息ID
-    String messageId = ChatUtils.generateMessageId(widget.shortConversationId);
-    // 构建消息模型
-    final chatModel = ChatModel(
-      messageId: messageId,
-      conversationId: widget.conversationId,
-      shortConversationId: widget.shortConversationId,
-      isMe: true,
-      senderId: myUid,
-      sender: User(
-        id: myUid,
-        nickName: myNickName,
-        avatar: myAvatar,
-        gender: '',
-      ),
-      content: Content(
-        type: "TEXT",
-        text: messageText,
-      ),
-      timestamp: DateTime.now(),
-      messageType: "CHAT",
-      status: Status(
-        read: true,
-        sendTime: DateTime.now(),
-      ),
-      sendStatus: "SENDING",
-      additionalInfo: AdditionalInfo(
-        replyToMessageId: "",
-      ),
-    );
+    Message message = MessageUtil.instance.buildSendingMessage(
+        widget.conversationId,
+        widget.shortConversationId,
+        mine,
+        'TEXT',
+        messageText,
+        '',
+        '');
     // 清除文本输入框
     _textController.clear();
-    _sendMessage(chatModel);
+    _sendMessage(message);
   }
 
-  Future<void> _setMessageFailed(ChatModel chatModel) async {
-    chatModel.sendStatus = 'FAILED';
-    await DatabaseManager.instance.insertMessage(chatModel);
-    _appendMessage(chatModel);
-  }
-
-  void _loadMessages() async {
-    final messages = await DatabaseManager.instance
-        .findMessagesByConversationId(widget.conversationId);
-    final senderIds =
-        messages.map((message) => message.senderId).toSet().toList();
-    final List<User> senders =
-        await DatabaseManager.instance.findUsersByIds(senderIds);
-    final senderMap = {for (var sender in senders) sender.id: sender};
+  Future<void> _loadMoreMessages() async {
+    final List<Message> messages = await DatabaseManager.instance
+        .findMessagesByConversationId(widget.conversationId, _messages.length);
     final now = DateTime.now();
     for (var message in messages) {
       final difference = now.difference(message.timestamp).inSeconds;
       if (message.sendStatus == 'SENDING' && difference > 15) {
         message.sendStatus = 'FAILED';
       }
-      message.sender = senderMap[message.senderId];
+      message.sender = _userMap[message.senderId];
+    }
+    messages.addAll(_messages);
+    setState(() {
+      _messages = messages;
+    });
+  }
+
+  void _loadMessages() async {
+    final messages = await DatabaseManager.instance
+        .findMessagesByConversationId(widget.conversationId, 0);
+    final now = DateTime.now();
+    for (var message in messages) {
+      final difference = now.difference(message.timestamp).inSeconds;
+      if (message.sendStatus == 'SENDING' && difference > 15) {
+        message.sendStatus = 'FAILED';
+      }
+      message.sender = _userMap[message.senderId];
     }
     setState(() {
       _messages = messages;
     });
     // 等待列表更新完成
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+      _scrollToBottom();
+      // 设置一个延时再次尝试滚动到底部
+      Future.delayed(const Duration(milliseconds: 500), () {
+        _scrollToBottom(); // 再次尝试滚动到底部
+      });
     });
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   Future<void> _fetchUserData() async {
     List<User> users = await DataCache().fetchUserData(widget.userIds);
+    _userMap = {for (var user in users) user.id: user};
+    print(_userMap);
     var uid = await ApiService().getUid();
     if (uid != null) {
       for (var userData in users) {
         if (userData.id == uid) {
           setState(() {
-            myUid = userData.id; // 确保数据中有 'id' 字段
-            myNickName = userData.nickName ?? '';
-            myAvatar = userData.avatar ?? '';
+            mine = User(
+                id: userData.id,
+                nickName: userData.nickName,
+                avatar: userData.avatar,
+                gender: userData.gender);
           });
         }
       }
@@ -271,79 +282,68 @@ class _ChatPageState extends State<ChatPage> {
       body: Column(
         children: <Widget>[
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController, // 使用控制器
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                final isMe = message.isMe;
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
-                  child: Row(
-                    mainAxisAlignment:
-                        isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-                    children: <Widget>[
-                      if (!isMe) ...[
-                        CircleAvatar(
-                            backgroundImage: NetworkImage(widget.avatar)), // 头像
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Container(
-                              margin: const EdgeInsets.all(5.0),
-                              padding: const EdgeInsets.all(10.0),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(message.content.text), // 聊天内容
-                            ),
-                          ],
-                        ),
-                      ] else ...[
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: <Widget>[
-                            Text(message.sendStatus),
-                            Row(
-                              children: [
-                                if (message.sendStatus == 'FAILED')
-                                  IconButton(
-                                    icon: const Icon(Icons.refresh,
-                                        color: Colors.red),
-                                    // 红色重试按钮
-                                    onPressed: () {
-                                      // 在此处处理重试逻辑
-                                      _retrySendMessage(message);
-                                    },
-                                  ),
-                                Container(
-                                  margin: const EdgeInsets.all(5.0),
-                                  padding: const EdgeInsets.all(10.0),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue[300],
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(message.content.text,
-                                      style: const TextStyle(
-                                          color: Colors.white)), // 聊天内容
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        CircleAvatar(
-                            backgroundImage:
-                                NetworkImage(message.sender!.avatar)),
-                        // 头像
-                      ],
-                    ],
-                  ),
-                );
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await _loadMoreMessages();
               },
+              child: ListView.builder(
+                controller: _scrollController, // 使用控制器
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final message = _messages[index];
+                  final isMe = message.isMe;
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                    child: Row(
+                      mainAxisAlignment: isMe
+                          ? MainAxisAlignment.end
+                          : MainAxisAlignment.start,
+                      children: <Widget>[
+                        if (!isMe) ...[
+                          CircleAvatar(
+                              backgroundImage: NetworkImage(widget.avatar)),
+                          // 头像
+                          const SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              _buildMessageContent(message),
+                            ],
+                          ),
+                        ] else ...[
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: <Widget>[
+                              Text(message.sendStatus),
+                              Row(
+                                children: [
+                                  if (message.sendStatus == 'FAILED')
+                                    IconButton(
+                                      icon: const Icon(Icons.refresh,
+                                          color: Colors.red),
+                                      // 红色重试按钮
+                                      onPressed: () {
+                                        // 在此处处理重试逻辑
+                                        _retrySendMessage(message);
+                                      },
+                                    ),
+                                  _buildMessageContent(message),
+                                ],
+                              )
+                            ],
+                          ),
+                          const SizedBox(width: 10),
+                          CircleAvatar(
+                              backgroundImage: NetworkImage(
+                                  _userMap[message.senderId]!.avatar)),
+                          // 头像
+                        ],
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ),
           Container(
@@ -352,6 +352,97 @@ class _ChatPageState extends State<ChatPage> {
         ],
       ),
     );
+  }
+
+  Widget _buildMessageContent(Message message) {
+    switch (message.content.type) {
+      case 'TEXT':
+        return Container(
+          margin: const EdgeInsets.all(5.0),
+          padding: const EdgeInsets.all(10.0),
+          decoration: BoxDecoration(
+            color: Colors.blue[300],
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(message.content.text,
+              style: const TextStyle(color: Colors.white)), // 聊天内容
+        );
+      case 'IMAGE':
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) =>
+                  FullScreenImageViewer(imagePath: message.content.filePath),
+            ));
+          },
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 200, maxHeight: 200),
+            child:
+                Image.file(File(message.content.filePath), fit: BoxFit.cover),
+          ),
+        );
+      case 'AUDIO':
+        return AudioPlayerWidget(
+            url: message.content.fileUrl, path: message.content.filePath);
+      case 'VIDEO':
+        return Container(
+          constraints: const BoxConstraints(maxWidth: 200, maxHeight: 200),
+          // 设置最大尺寸
+          child: VideoPlayerWidget(
+              url: message.content.fileUrl, path: message.content.filePath),
+        );
+      default:
+        return const SizedBox.shrink(); // 未知类型处理
+    }
+  }
+
+  Future<void> _sendMedia() async {
+    List<File> medias = await FileUtils.instance.directlyOpenFilePicker();
+    // 处理选择的文件，例如显示文件名、上传文件等
+    List<Message> fileMessagesToSend = [];
+    for (File media in medias) {
+      print("Upload file: ${media.path}");
+      final fileSizeBytes = await media.length();
+      final fileSizeMb = fileSizeBytes / (1024 * 1024);
+      if (fileSizeMb > 200) {
+        showToast('文件最大支持200MB',
+            duration: const Duration(seconds: 2),
+            position: ToastPosition.bottom,
+            backgroundColor: Colors.black12,
+            textPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            textStyle: const TextStyle(color: Colors.black));
+        continue;
+      }
+      String extension = p.extension(media.path);
+      FileContent fileContent =
+          FileUtils.instance.getContentTypeFromExtension(extension);
+      Message message = MessageUtil.instance.buildSendingMessage(
+          widget.conversationId,
+          widget.shortConversationId,
+          mine,
+          fileContent.contentType,
+          fileContent.contentText,
+          media.path,
+          '');
+      fileMessagesToSend.add(message);
+      _appendMessage(message);
+    }
+    _copyAndSendFileMessage(fileMessagesToSend);
+  }
+
+  Future<void> _copyAndSendFileMessage(List<Message> messages) async {
+    for (Message message in messages) {
+      File media = File(message.content.filePath);
+      FileModel? uploaded = await FileUtils.instance.copyAndSendFile(media);
+      if (uploaded != null) {
+        message.content.filePath = uploaded.file.path;
+        message.content.fileUrl = uploaded.uploadedUrl;
+        _updateMessage(message);
+        _sendFileMessage(message);
+      } else {
+        _removeMessage(message);
+      }
+    }
   }
 
   Widget _buildTextInput() {
@@ -421,7 +512,7 @@ class _ChatPageState extends State<ChatPage> {
             children: <Widget>[
               Expanded(
                   child: _buildChatIcon('assets/chat/photo.png', () {
-                // 图片点击事件
+                _sendMedia();
               })),
               Expanded(
                   child: _buildChatIcon('assets/chat/phone.png', () {
