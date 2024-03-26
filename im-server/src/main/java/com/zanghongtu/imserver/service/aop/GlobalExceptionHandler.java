@@ -4,6 +4,7 @@ import com.zanghongtu.imserver.exception.BaseException;
 import com.zanghongtu.imserver.exception.BusinessException;
 import com.zanghongtu.imserver.exception.CheckException;
 import com.zanghongtu.imserver.exception.PermitException;
+import com.zanghongtu.imserver.exception.login.InvalidTokenExpiredException;
 import com.zanghongtu.imserver.exception.login.RefreshTokenExpiredException;
 import com.zanghongtu.imserver.service.aop.dto.BaseDTO;
 import com.zanghongtu.imserver.service.aop.dto.BaseErrorCode;
@@ -40,6 +41,9 @@ public class GlobalExceptionHandler {
             return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
         } else if (e instanceof RefreshTokenExpiredException) {
             errorResponse = new BaseDTO<>(BaseErrorCode.REFRESH_TOKEN_EXPIRED);
+            return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        } else if (e instanceof InvalidTokenExpiredException) {
+            errorResponse = new BaseDTO<>(BaseErrorCode.TOKEN_EXPIRED);
             return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
         } else if (e instanceof BaseException) {
             errorResponse = new BaseDTO<>(((BaseException) e).getErrorCode(), e.getMessage());

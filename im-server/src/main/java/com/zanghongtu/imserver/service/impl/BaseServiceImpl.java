@@ -75,11 +75,11 @@ public class BaseServiceImpl<T, ID> implements IBaseService<T, ID> {
         repository.deleteAll();
     }
 
-    @NotNull
-    @Override
-    public <S extends T> S save(@NotNull S entity) {
-        return repository.save(entity);
-    }
+//    @NotNull
+//    @Override
+//    public <S extends T> S save(@NotNull S entity) {
+//        return repository.save(entity);
+//    }
 
     @Override
     public <S extends T> S insert(S entity) {

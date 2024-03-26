@@ -19,4 +19,12 @@ public class UserInfoDTO {
 
     private Gender gender;
 
+    private Integer height;
+
+    private Integer age;
+
+    private Double weight;
+
+    private String job;
+
 }

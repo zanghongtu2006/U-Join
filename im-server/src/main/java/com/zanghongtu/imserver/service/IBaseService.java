@@ -32,7 +32,7 @@ public interface IBaseService<T, ID> {
 
     void deleteAll();
 
-    <S extends T> S save(S entity);
+//    <S extends T> S save(S entity);
 
     <S extends T> S insert(S entity);
 

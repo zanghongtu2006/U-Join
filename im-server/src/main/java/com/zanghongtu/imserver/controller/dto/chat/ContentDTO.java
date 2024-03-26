@@ -14,4 +14,6 @@ public class ContentDTO {
     private String filePath;
 
     private String fileUrl;
+
+    private Integer duration;
 }

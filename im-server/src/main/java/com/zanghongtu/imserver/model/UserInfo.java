@@ -15,7 +15,7 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
-@Table(name = "user")
+@Table(name = "user_info")
 public class UserInfo extends BaseEntity {
 
     private String fullName;
@@ -35,7 +35,9 @@ public class UserInfo extends BaseEntity {
 
     private UserStatus status;
 
-    private Double height;
+    private Integer height;
+
+    private Integer age;
 
     private Double weight;
 

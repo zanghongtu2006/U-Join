@@ -8,7 +8,6 @@ import com.zanghongtu.imserver.controller.dto.user.Gender;
 import com.zanghongtu.imserver.exception.PermitException;
 import com.zanghongtu.imserver.model.Conversation;
 import com.zanghongtu.imserver.model.ConversationUser;
-import com.zanghongtu.imserver.model.User;
 import com.zanghongtu.imserver.model.UserInfo;
 import com.zanghongtu.imserver.service.IConversationService;
 import com.zanghongtu.imserver.service.IConversationUserService;
@@ -16,14 +15,12 @@ import com.zanghongtu.imserver.service.IUserInfoService;
 import com.zanghongtu.imserver.threadlocal.ReqInfoOperator;
 import jakarta.persistence.criteria.Predicate;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.beanutils.BeanUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +42,27 @@ public class ConversationController extends BaseController {
         this.conversationService = conversationService;
         this.conversationUserService = conversationUserService;
         this.userInfoService = userInfoService;
+    }
+
+    @PostMapping(path = "")
+    public ConversationDTO createConversation(@RequestBody ConversationDTO dto) {
+        Optional<Conversation> existed = conversationService.getByConversationId(dto.getConversationId());
+        if (existed.isPresent()) {
+            return model2dto(existed.get(), ConversationDTO.class);
+        }
+        Conversation conversation = new Conversation();
+        BeanUtils.copyProperties(dto, conversation);
+        Conversation model = conversationService.insert(conversation);
+        for (String uid : dto.getUserIds()) {
+            ConversationUser conversationUser = new ConversationUser();
+            conversationUser.setUserId(uid);
+            conversationUser.setConversationId(dto.getConversationId());
+            conversationUser.setAvatar(dto.getAvatar());
+            conversationUser.setNickName(dto.getNickName());
+            conversationUser.setType(dto.getType());
+            conversationUserService.insert(conversationUser);
+        }
+        return model2dto(model, ConversationDTO.class);
     }
 
     @GetMapping(path = "latest")
@@ -76,7 +94,7 @@ public class ConversationController extends BaseController {
             return p;
         };
         Page<ConversationUser> conversationUserPage =
-                (conversationUserService.search(spec, pageRequest.getPageIndex(), pageRequest.getPageSize()));
+                conversationUserService.search(spec, pageRequest.getPageIndex(), pageRequest.getPageSize());
         conversationUsers.addAll(conversationUserPage.getContent());
         PageResponse<ConversationDTO> response = model2dto(conversationUserPage, ConversationDTO.class);
         response.setRows(model2dto(conversationUsers));

@@ -32,7 +32,7 @@ public class ProfileDTO {
 
     private Date birthDate;
 
-    private Double height;
+    private Integer height;
 
     private Double weight;
 

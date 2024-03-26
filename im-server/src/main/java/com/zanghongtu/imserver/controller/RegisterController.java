@@ -60,7 +60,7 @@ public class RegisterController extends BaseController {
         newUser.setUsername(userDto.getUsername());
         newUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
         // 保存用户
-        userService.save(newUser);
+        userService.insert(newUser);
         UserInfo userInfo = registerService.register(userDto.getUsername(), newUser);
 
         String sessionID = UUID.randomUUID().toString();

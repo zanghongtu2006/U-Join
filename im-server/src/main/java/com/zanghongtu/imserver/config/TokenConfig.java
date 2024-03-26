@@ -18,7 +18,7 @@ public class TokenConfig {
 
     private String subject = "HONGTU";
     private String appSecret = "HONGTU";
-    private long accessTokenExpireTime = 86400000;
+    private long accessTokenExpireTime = 86400000/24/12; //1天
     private long refreshTokenExpireTime = 30;
 
     public static final String CLAIM_TYPE = "typ";
