@@ -31,6 +31,22 @@ class Conversation {
     required this.lastUpdateTime,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'conversationId': conversationId,
+      'shortConversationId': shortConversationId,
+      'nickName': nickName,
+      'avatar': avatar,
+      'type': type,
+      'lastMessage': lastMessage,
+      'unReadCount': unReadCount,
+      'userIds': userIds,
+      'gender': gender,
+      // 将DateTime对象转换为ISO 8601格式的字符串
+      'lastUpdateTime': lastUpdateTime.toIso8601String(),
+    };
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'conversationId': conversationId,

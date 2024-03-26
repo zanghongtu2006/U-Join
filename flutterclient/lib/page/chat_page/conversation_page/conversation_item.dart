@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../chat/chat.dart';
 
-class ChatListItem extends StatefulWidget {
+class ConversationItem extends StatefulWidget {
   final String conversationId;
   final String shortConversationId;
   final String avatarUrl;
@@ -16,7 +16,7 @@ class ChatListItem extends StatefulWidget {
   final bool isOnline;
   final Function onChatClosed;
 
-  const ChatListItem({
+  const ConversationItem({
     super.key,
     required this.conversationId,
     required this.shortConversationId,
@@ -30,10 +30,10 @@ class ChatListItem extends StatefulWidget {
   });
 
   @override
-  _ChatListItemState createState() => _ChatListItemState();
+  _ConversationItemState createState() => _ConversationItemState();
 }
 
-class _ChatListItemState extends State<ChatListItem> {
+class _ConversationItemState extends State<ConversationItem> {
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +85,7 @@ class _ChatListItemState extends State<ChatListItem> {
             builder: (context) => ChatPage(conversationId: widget.conversationId,userIds:widget.userIds,
                 shortConversationId: widget.shortConversationId,avatar: widget.avatarUrl, nickName:widget.nickName),
           )
-        ).then((value) => {widget.onChatClosed?.call()});
+        ).then((value) => {widget.onChatClosed.call()});
       },
     );
   }

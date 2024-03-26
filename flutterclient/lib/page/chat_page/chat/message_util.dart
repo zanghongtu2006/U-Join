@@ -16,7 +16,6 @@ class MessageUtil {
   static MessageUtil get instance => _instance;
 
   Future<bool> sendMessage(Message message) async {
-    print("sending");
     String destination = '/app/chat';
     await DatabaseManager.instance.insertMessage(message);
     return WsManager().sendMessage(destination, jsonEncode(message.toSendMap()));
@@ -76,6 +75,7 @@ class MessageUtil {
           text: messageData['content']['text'],
           filePath: messageData['content']['filePath'],
           fileUrl: messageData['content']['fileUrl'],
+          duration: messageData['content']['duration'],
         ),
         timestamp: DateTime.fromMillisecondsSinceEpoch(messageData['timestamp']),
         messageType: messageData['messageType'],
@@ -90,7 +90,7 @@ class MessageUtil {
       conversation.lastMessage = messageData['content']['text'];
       conversation.unReadCount = conversation.unReadCount+1;
       DatabaseManager.instance.insertMessage(message);
-      DatabaseManager.instance.insertConversation(conversation);
+      DatabaseManager.instance.insertOrUpdateConversation(conversation);
       _removeMessageTimers(messageData['messageId']);
       if(!isMe) {
         return message;

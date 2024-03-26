@@ -23,7 +23,7 @@ class _FilterButtonsState extends State<FilterButtons> {
         const SizedBox(width: 16),
         ...List.generate(_filters.length, (index) {
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 0.0), // 减少按钮之间的水平间距
+            padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 0), // 减少按钮之间的水平间距
             child: TextButton(
               onPressed: () {
                 setState(() => _selectedButtonIndex = index);
@@ -43,9 +43,9 @@ class _FilterButtonsState extends State<FilterButtons> {
             ),
           );
         }),
-        const Spacer(), // 用于将文本按钮和筛选按钮分开
-        LogoButton(logoPath: 'assets/icon/dynamic_pub.png', text: '发布', onPressed: (){},
-            backgroundColor: Colors.indigoAccent, textColor: Colors.white),
+        // const Spacer(), // 用于将文本按钮和筛选按钮分开
+        // LogoButton(logoPath: 'assets/icon/dynamic_pub.png', text: '发布', onPressed: (){},
+        //     backgroundColor: Colors.indigoAccent, textColor: Colors.white),
         const SizedBox(width: 20)
       ],
     );

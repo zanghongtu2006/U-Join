@@ -60,6 +60,30 @@ class FileUtils {
     return null;
   }
 
+  Future<List<File>> directlyImagePicker() async {
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      type: FileType.image,
+    );
+    if (result != null) {
+      List<File> files = result.paths.map((path) => File(path!)).toList();
+      return files;
+    }
+    return [];
+  }
+
+  Future<List<File>> directlyVideoPicker() async {
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+      type: FileType.video,
+    );
+    if (result != null) {
+      List<File> files = result.paths.map((path) => File(path!)).toList();
+      return files;
+    }
+    return [];
+  }
+
   Future<List<File>> directlyOpenFilePicker() async {
     final result = await FilePicker.platform.pickFiles(
       allowMultiple: true,

@@ -63,7 +63,8 @@ class DatabaseManager {
     id TEXT PRIMARY KEY,
     nickName TEXT,
     avatar TEXT,
-    gender TEXT
+    gender TEXT,
+    height int
   );
   ''');
 
@@ -84,6 +85,7 @@ class DatabaseManager {
   //Message
   Future<void> insertMessage(Message chatModel) async {
     final db = await instance.database;
+    print("=============insertMessage==================${chatModel.toMap()}");
     await db.insert(
       'messages',
       chatModel.toMap(), // 假设您有一个方法将ChatModel转换为Map
@@ -166,17 +168,16 @@ class DatabaseManager {
   Future<void> insertOrUpdateUsers(List<User> users) async {
     final db = await instance.database;
     for (var user in users) {
-      print(user.toMap());
       await db.insert(
         'users',
-        user.toMap(),
+        user.toDBMap(),
         conflictAlgorithm: ConflictAlgorithm.replace, // 使用REPLACE策略
       );
     }
   }
 
   //Conversations
-  Future<void> insertConversation(Conversation conversation) async {
+  Future<void> insertOrUpdateConversation(Conversation conversation) async {
     final db = await instance.database;
     await db.insert(
       'conversations',
@@ -187,7 +188,7 @@ class DatabaseManager {
 
   Future<void> insertOrUpdateConversations(List<Conversation> conversations) async {
     for (var conversation in conversations) {
-      await insertConversation(conversation);
+      await insertOrUpdateConversation(conversation);
     }
   }
 
@@ -228,5 +229,4 @@ class DatabaseManager {
       whereArgs: [conversationId],
     );
   }
-
 }

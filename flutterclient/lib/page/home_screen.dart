@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/social_page/social_page.dart';
+import 'package:flutterclient/util/api_service.dart';
 
 import 'chat_page/chat/ws_manager.dart';
 import 'chat_page/chat_page.dart';
@@ -28,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    ApiService().refreshToken();
     WsManager().initialize();
   }
 

@@ -18,6 +18,7 @@ import '../../../util/db_manager.dart';
 import '../model/user_model.dart';
 import 'file_viewer/audio_player.dart';
 import 'file_viewer/file_util.dart';
+import 'file_viewer/image_video_picker.dart';
 import 'file_viewer/image_viewer_fullscreen.dart';
 import 'file_viewer/video_player_widget.dart';
 import 'file_viewer/voice_input_widget.dart';
@@ -88,7 +89,7 @@ class _ChatPageState extends State<ChatPage> {
           if (frame.body != null) {
             // 处理收到的消息
             String? body = frame.body;
-            print('Chat reply: $body');
+            print('=======================Chat reply: $body');
             if (body != null) {
               Message? message =
                   await MessageUtil.instance.dealReceived(body, mine.id);
@@ -253,19 +254,16 @@ class _ChatPageState extends State<ChatPage> {
   Future<void> _fetchUserData() async {
     List<User> users = await DataCache().fetchUserData(widget.userIds);
     _userMap = {for (var user in users) user.id: user};
-    print(_userMap);
     var uid = await ApiService().getUid();
-    if (uid != null) {
-      for (var userData in users) {
-        if (userData.id == uid) {
-          setState(() {
-            mine = User(
-                id: userData.id,
-                nickName: userData.nickName,
-                avatar: userData.avatar,
-                gender: userData.gender);
-          });
-        }
+    for (var userData in users) {
+      if (userData.id == uid) {
+        setState(() {
+          mine = User(
+              id: userData.id,
+              nickName: userData.nickName,
+              avatar: userData.avatar,
+              gender: userData.gender);
+        });
       }
     }
   }
@@ -396,6 +394,12 @@ class _ChatPageState extends State<ChatPage> {
         return const SizedBox.shrink(); // 未知类型处理
     }
   }
+
+  // void _openFilePicker(BuildContext context) {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(builder: (_) => ImageVideoPicker()),
+  //   );
+  // }
 
   Future<void> _sendMedia() async {
     List<File> medias = await FileUtils.instance.directlyOpenFilePicker();

@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutterclient/util/db_manager.dart';
 
 import '../../../util/data_cache.dart';
 import 'conversation_item.dart';
 import '../model/conversation_model.dart';
 
-class ChatListWidget extends StatefulWidget {
-  const ChatListWidget({super.key});
+class ConversationListWidget extends StatefulWidget {
+  const ConversationListWidget({super.key});
 
   @override
-  _ChatListWidgetState createState() => _ChatListWidgetState();
+  _ConversationListWidgetState createState() => _ConversationListWidgetState();
 }
 
-class _ChatListWidgetState extends State<ChatListWidget> with WidgetsBindingObserver {
-  List<dynamic> contacts = [];
+class _ConversationListWidgetState extends State<ConversationListWidget> with WidgetsBindingObserver {
+  List<Conversation> conversations = [];
 
   @override
   void initState() {
@@ -43,17 +44,17 @@ class _ChatListWidgetState extends State<ChatListWidget> with WidgetsBindingObse
     return RefreshIndicator(
       onRefresh: _fetchConversations,
       child: ListView.separated(
-        itemCount: contacts.length,
+        itemCount: conversations.length,
         itemBuilder: (context, index) {
-          var contact = contacts[index];
+          Conversation conversation = conversations[index];
           return Slidable(
-            key: ValueKey(contact.conversationId), // 确保每个 Slidable 有唯一的 key
+            key: ValueKey(conversation.conversationId), // 确保每个 Slidable 有唯一的 key
             endActionPane: ActionPane(
               motion: const DrawerMotion(),
               extentRatio: 0.16, // 定义滑动动画效果
               children: [
                 SlidableAction(
-                  onPressed: (context) => _deleteContact(contact),
+                  onPressed: (context) => _deleteContact(conversation),
                   backgroundColor: Colors.red,
                   icon: Icons.delete,
                   label: '删除',
@@ -61,14 +62,14 @@ class _ChatListWidgetState extends State<ChatListWidget> with WidgetsBindingObse
                 ),
               ],
             ),
-            child: ChatListItem(
-              conversationId: contact.conversationId,
-              shortConversationId: contact.shortConversationId,
-              avatarUrl: contact.avatar,
-              nickName: contact.nickName,
-              userIds: contact.userIds,
-              lastMessage: contact.lastMessage,
-              lastUpdateTime: contact.lastUpdateTime,
+            child: ConversationItem(
+              conversationId: conversation.conversationId,
+              shortConversationId: conversation.shortConversationId,
+              avatarUrl: conversation.avatar,
+              nickName: conversation.nickName,
+              userIds: conversation.userIds,
+              lastMessage: conversation.lastMessage,
+              lastUpdateTime: conversation.lastUpdateTime,
               isOnline: true,
               onChatClosed: () {
                 _fetchConversations(); // 当从聊天页面返回时调用
@@ -120,19 +121,20 @@ class _ChatListWidgetState extends State<ChatListWidget> with WidgetsBindingObse
 
   Future<void> _fetchConversations() async {
     try {
-      List<Conversation> conversations = await DataCache().fetchConversations(1, 20);
+      List<Conversation> list = await DataCache().fetchConversations(1, 20);
       setState(() {
-        contacts.clear();
-        contacts.addAll(conversations);
+        conversations.clear();
+        conversations.addAll(list);
       });
     } catch( e) {
       print(e);
     }
   }
 
-  void _deleteContact(contact) {
+  void _deleteContact(Conversation conversation) {
     setState(() {
-      contacts.remove(contact);
+      conversations.remove(conversation);
     });
+    DatabaseManager.instance.deleteConversation(conversation.conversationId);
   }
 }

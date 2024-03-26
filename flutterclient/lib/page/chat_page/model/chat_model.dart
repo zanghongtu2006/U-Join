@@ -113,7 +113,7 @@ class Content {
       text: map['text'],
       filePath: map['filePath'],
       fileUrl: map['fileUrl'],
-      duration: map['duration']??0,
+      duration: map['duration']??0
     );
   }
 }

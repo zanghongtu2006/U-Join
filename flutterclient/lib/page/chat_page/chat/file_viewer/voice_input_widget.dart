@@ -19,7 +19,6 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   bool _isRecorderInitialized = false;
   bool _isRecording = false;
-  DateTime? _startRecordingTime;
   Duration _recordDuration = Duration.zero;
   Timer? _timer;
 
@@ -33,7 +32,7 @@ class _VoiceInputWidgetState extends State<VoiceInputWidget> {
     // 初始化录音时长
     _recordDuration = Duration.zero;
     // 设置定时器每秒更新一次录音时长
-    _timer = Timer.periodic(Duration(seconds: 1), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       setState(() {
         _recordDuration = Duration(seconds: _recordDuration.inSeconds + 1);
       });

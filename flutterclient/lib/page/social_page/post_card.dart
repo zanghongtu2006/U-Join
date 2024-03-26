@@ -1,33 +1,76 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/button/logo_button.dart';
 import 'package:flutterclient/page/chat_page/chat/chat.dart';
+import 'package:flutterclient/util/api_service.dart';
 
-class PostCard extends StatelessWidget {
-  final String avatar;
-  final String name;
-  final int age;
-  final int height;
-  final String content;
-  final List<String> images;
-  final String location;
+import '../../util/chat_util.dart';
+import '../../util/db_manager.dart';
+import '../chat_page/model/conversation_model.dart';
+import '../chat_page/model/post_model.dart';
+
+class PostCard extends StatefulWidget {
+  final Post post;
 
   const PostCard({
     Key? key,
-    required this.avatar,
-    required this.name,
-    required this.age,
-    required this.height,
-    required this.content,
-    required this.images,
-    required this.location,
+    required this.post,
   }) : super(key: key);
+
+  @override
+  _PostCardState createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  late Post _post;
+  final List<String> _userIds = [];
+  late String _conversationId;
+  late String _shortConversationId;
+
+  @override
+  void initState() {
+    super.initState();
+    _post = widget.post;
+    _buildConversationIds();
+  }
+
+  Future<void> _buildConversationIds() async {
+    String myUid = await ApiService().getUid();
+    setState(() {
+      _userIds.add(_post.userInfo.id);
+      _userIds.add(myUid);
+      _conversationId = ChatUtils.generateConversationId(_userIds);
+      _shortConversationId =
+          _conversationId.substring(0, 8) + _conversationId.substring(36, 44);
+    });
+  }
+
+  Future<void> _likeOrUnlike(String id) async {
+    setState(() {
+      _post.like = !_post.like;
+      if (_post.like) {
+        _post.likeCount = _post.likeCount + 1;
+      } else {
+        _post.likeCount = _post.likeCount - 1;
+      }
+    });
+
+    var response = await ApiService().post('/posts/like/$id', {});
+    if (response.statusCode == 200) {
+      var data = json.decode(response.body)['data'];
+      Post post = Post.fromMap(data);
+      setState(() {
+        _post = post;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.fromLTRB(16, 0, 16, 16),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey[300]!, width: 1.0), // 设置浅灰色边框
         borderRadius: BorderRadius.circular(4.0), // 如果需要，可以设置边框圆角
@@ -41,14 +84,18 @@ class PostCard extends StatelessWidget {
             ListTile(
               leading: CircleAvatar(
                 radius: 24,
-                backgroundImage: AssetImage(avatar),
+                backgroundImage: NetworkImage(_post.userInfo.avatar),
               ),
-              title:  Column(
+              title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4), // 增加 title 和 subtitle 之间的间隔
-                  Text('$age岁 · $height厘米 · 质检QC', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(_post.userInfo.nickName,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4), // 增加 title 和 subtitle 之间的间隔
+                  Text(
+                      '${_post.userInfo.age}岁 · ${_post.userInfo.height}厘米 · ${_post.userInfo.job}',
+                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),
@@ -56,38 +103,46 @@ class PostCard extends StatelessWidget {
               padding: const EdgeInsets.only(left: 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
-                children: [Text(content)],
+                children: [Text(_post.content)],
               ),
             ),
             const SizedBox(height: 8),
             _buildImages(context),
             const SizedBox(height: 8),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  ColorFiltered(
-                    colorFilter: ColorFilter.mode(
-                      Colors.grey, // 您想要的颜色
-                      BlendMode.srcATop, // 保留透明度的同时应用颜色到非透明区域
-                    ),
-                    child: Image.asset(
-                      'assets/icon/heart_empty.png',
-                      width: 24.0,
-                      height: 24.0,
-                      fit: BoxFit.cover,
+                  GestureDetector(
+                    onTap: () {
+                      _likeOrUnlike(_post.id);
+                    },
+                    child: ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        _post.like ? Colors.redAccent : Colors.grey,
+                        // 您想要的颜色
+                        BlendMode.srcATop, // 保留透明度的同时应用颜色到非透明区域
+                      ),
+                      child: Image.asset(
+                        _post.like
+                            ? 'assets/icon/heart_fill_red.png'
+                            : 'assets/icon/heart_empty.png',
+                        width: 24.0,
+                        height: 24.0,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                  SizedBox(width: 8),
-                  Text('3'),
-                  SizedBox(width: 40),
+                  const SizedBox(width: 8),
+                  Text('${_post.likeCount}'),
+                  const SizedBox(width: 40),
                   Image.asset('assets/icon/reply.png',
                       width: 24.0, // 图片的宽度
                       height: 24.0, // 图片的高度
                       fit: BoxFit.cover),
-                  SizedBox(width: 8),
-                  Text('3'),
+                  const SizedBox(width: 8),
+                  Text('${_post.replyCount}'),
                 ],
               ),
             ),
@@ -102,7 +157,8 @@ class PostCard extends StatelessWidget {
                     width: 16, // 图标的宽度
                   ),
                   const SizedBox(width: 8),
-                  Text(location, style: TextStyle(color: Colors.grey)),
+                  Text(_post.location,
+                      style: const TextStyle(color: Colors.grey)),
                   const Spacer(),
                   LogoButton(
                     logoPath: 'assets/icon/love_chat_icon.png',
@@ -110,10 +166,33 @@ class PostCard extends StatelessWidget {
                     borderWidth: 1.0,
                     text: '搭讪',
                     onPressed: () {
+                      Conversation conversation = Conversation(
+                          conversationId: _conversationId,
+                          shortConversationId: _shortConversationId,
+                          nickName: _post.userInfo.nickName,
+                          type: 'PERSON',
+                          avatar: _post.userInfo.avatar,
+                          lastMessage: '',
+                          userIds: _userIds,
+                          unReadCount: 0,
+                          gender: _post.userInfo.gender,
+                          lastUpdateTime: DateTime.now());
+                      DatabaseManager.instance
+                          .insertOrUpdateConversation(conversation);
+                      print("=======================${conversation.toJson()}");
+                      ApiService()
+                          .post("/conversations", conversation.toJson());
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => ChatPage(conversationId: "hello",userIds:[],shortConversationId: "hello",nickName: 'hello',avatar: "avatar",)), // TargetPage是要跳转到的页面
+                          builder: (context) => ChatPage(
+                            userIds: _userIds,
+                            conversationId: _conversationId,
+                            shortConversationId: _shortConversationId,
+                            nickName: _post.userInfo.nickName,
+                            avatar: _post.userInfo.avatar,
+                          ),
+                        ), // TargetPage是要跳转到的页面
                       );
                     },
                   ),
@@ -127,20 +206,20 @@ class PostCard extends StatelessWidget {
   }
 
   Widget _buildImages(BuildContext context) {
-    if (images.length == 1) {
+    if (_post.imageUrls.length == 1) {
       return FutureBuilder(
-        future: getImageDimensions(images.first),
+        future: getImageDimensions(_post.imageUrls.first),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done &&
               snapshot.hasData) {
-            final ImageInfo? imageInfo = snapshot.data as ImageInfo?;
+            final ImageInfo? imageInfo = snapshot.data;
             final double? imageHeight = imageInfo?.image.height.toDouble();
             final double? imageWidth = imageInfo?.image.width.toDouble();
 
             // 保持图片原始比例的同时适应屏幕宽度
             if (imageWidth != null && imageHeight != null) {
               final double screenWidth = MediaQuery.of(context).size.width;
-              final double maxHeight = 300.0;
+              const double maxHeight = 300.0;
               final double ratio = imageWidth / imageHeight;
               final double adjustedWidth = screenWidth;
               final double adjustedHeight = adjustedWidth / ratio;
@@ -150,12 +229,12 @@ class PostCard extends StatelessWidget {
 
               return Align(
                 alignment: Alignment.centerLeft,
-                child: Container(
+                child: SizedBox(
                   width: finalWidth, // 仅设置容器宽度为图片的宽度
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8.0), // 设置圆角半径
-                    child: Image.asset(
-                      images.first,
+                    child: Image.network(
+                      _post.imageUrls.first,
                       fit: BoxFit.scaleDown,
                     ),
                   ),
@@ -172,6 +251,7 @@ class PostCard extends StatelessWidget {
     } else {
       // 多张图片的情况
       return GridView.builder(
+        padding: EdgeInsets.zero,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -179,12 +259,12 @@ class PostCard extends StatelessWidget {
           crossAxisSpacing: 10.0, // 列之间的间距
           mainAxisSpacing: 10.0, // 行之间的间距
         ),
-        itemCount: images.length,
+        itemCount: _post.imageUrls.length,
         itemBuilder: (context, index) {
           return ClipRRect(
             borderRadius: BorderRadius.circular(8.0), // 设置圆角半径
-            child: Image.asset(
-              images[index],
+            child: Image.network(
+              _post.imageUrls[index],
               fit: BoxFit.cover,
             ),
           );
@@ -198,16 +278,8 @@ class PostCard extends StatelessWidget {
 Future<ImageInfo?> getImageDimensions(String assetName) async {
   final Completer<ImageInfo?> completer = Completer<ImageInfo?>();
   final ImageStream stream =
-      AssetImage(assetName).resolve(ImageConfiguration.empty);
+      NetworkImage(assetName).resolve(ImageConfiguration.empty);
   final listener = ImageStreamListener((info, _) => completer.complete(info));
   stream.addListener(listener);
   return completer.future;
-}
-
-// 计算两张图片的高度比
-double _calculateAspectRatio(List<String> images) {
-  // 这里需要计算两张图片的最大高度，并得出宽度和高度的比例
-  // 您需要实现一个函数来获取这两张图片的尺寸，然后计算比例
-  // 示例返回值，实际需要根据图片尺寸进行计算
-  return 1.5; // 这是宽高比例的示例值，需要您根据实际情况计算
 }

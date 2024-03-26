@@ -20,10 +20,9 @@ class ApiService {
     await storage.write(key: 'uid', value: uid);
   }
 
-  Future<String?> getUid() async {
+  Future<String> getUid() async {
     try {
       String? uid = await storage.read(key: 'uid');
-      print("Retrieved uid: $uid"); // 调试信息
       return uid ?? '';
     } catch (e) {
       print("Error getting uid: $e"); // 错误处理
@@ -34,7 +33,7 @@ class ApiService {
   Future<String?> getToken() async {
     try {
       String? token = await storage.read(key: 'access_token');
-      print("Retrieved token: $token"); // 调试信息
+      // print("================Retrieved token: $token"); // 调试信息
       return token ?? '';
     } catch (e) {
       print("Error getting token: $e"); // 错误处理
@@ -48,7 +47,6 @@ class ApiService {
 
   Future<bool> refreshToken() async {
     String? refreshToken = await storage.read(key: 'refresh_token');
-    print("refreshToken:$refreshToken");
     if (refreshToken == null) {
       return false;
     }
@@ -56,7 +54,6 @@ class ApiService {
     var response = await ApiService().post("/token/refresh", body);
     if (response.statusCode == 200) {
       var result = json.decode(response.body);
-      print(result['data']);
       // 存储token
       await setToken(result['data']['access-token'], result['data']['refresh-token'], result['data']['userId']);
       return true;
@@ -81,7 +78,8 @@ class ApiService {
     var uri = Uri.parse('$baseUrl$endpoint');
     // 如果传递了参数，则将参数添加到 URL 中
     if (params != null && params.isNotEmpty) {
-      uri = uri.replace(queryParameters: params);
+      var stringParams = params.map((key, value) => MapEntry(key, value.toString()));
+      uri = uri.replace(queryParameters: stringParams);
     }
     final response = await http
         .get(uri, headers: headers)
@@ -90,7 +88,7 @@ class ApiService {
     });
 
     return _handleResponse(response, endpoint,
-        headers: headers, data: params, method: 'GET');
+        headers: headers, data: params, params: params, method: 'GET');
   }
 
   Future<http.Response> post(String endpoint, dynamic data) async {
@@ -153,6 +151,7 @@ class ApiService {
 
   Future<http.Response> _handleResponse(http.Response response, String endpoint,
       {Map<String, String>? headers,
+        Map<String, dynamic>? params,
       dynamic data,
       String method = 'GET'}) async {
     if (response.statusCode == 401) {
@@ -162,7 +161,7 @@ class ApiService {
         navigatorKey.currentState?.pushReplacementNamed('/login');
       } else {
         return await _retry(endpoint,
-            headers: headers, data: data, method: method);
+            headers: headers, data: data, params:params, method: method);
       }
     } else if (response.statusCode == 200) {
       var result = json.decode(response.body);
@@ -175,7 +174,7 @@ class ApiService {
             textStyle: const TextStyle(color: Colors.black));
       }
     } else {
-      showToast('网络连接异常',
+      showToast('网络连接异常 ${response.statusCode}',
           duration: const Duration(seconds: 2),
           position: ToastPosition.bottom,
           backgroundColor: Colors.black12,
@@ -187,7 +186,7 @@ class ApiService {
 
   Future<http.Response> _retry(String endpoint,
       {Map<String, String>? headers,
-      dynamic data,
+      dynamic data, Map<String, dynamic>? params,
       String method = 'GET'}) async {
     // 重新获取token
     var token = await getToken();
@@ -217,7 +216,10 @@ class ApiService {
             headers: updatedHeaders, body: json.encode(data));
         break;
       default: // GET
-        uri = uri.replace(queryParameters: data); // 假设data是一个包含查询参数的Map
+        if (params != null && params.isNotEmpty) {
+          var stringParams = params.map((String key, value) => MapEntry<String, String>(key, value.toString()));
+          uri = uri.replace(queryParameters: stringParams);
+        }
         response = await http.get(uri, headers: updatedHeaders);
     }
     return response; // 返回重试后的响应

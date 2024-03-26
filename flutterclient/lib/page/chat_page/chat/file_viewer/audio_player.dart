@@ -36,7 +36,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   void _updateBarWidth() {
     const double minBarWidth = 50.0;
     const double maxBarWidth = 200.0;
-    const maxDurationSec = 180.0; // 假设最长音频为180秒
+    const maxDurationSec = 30.0; // 假设最长音频为180秒
     double durationSec = widget.duration.toDouble();
     double widthRatio = durationSec / maxDurationSec;
     barWidth = minBarWidth + (maxBarWidth - minBarWidth) * widthRatio;
