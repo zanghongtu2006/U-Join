@@ -66,7 +66,6 @@ class _MinePageState extends State<MinePage>
         });
           User user = User(id: data['id'],nickName: data['nickName'],avatar: data['avatar'] ,gender:data['gender'] ?? 'UNKNOWN' );
         List<User> users = [user];
-        print(users[0].avatar);
         DatabaseManager.instance.insertOrUpdateUsers(users);
       }
     } catch (e) {

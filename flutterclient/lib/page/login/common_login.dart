@@ -114,7 +114,6 @@ class _CommonLoginPageState extends State<CommonLoginPage> {
                       );
                       if (response.statusCode == 200) {
                         var result = json.decode(response.body);
-                        print(result['data']);
                         // 存储token
                         await ApiService().setToken(
                             result['data']['access-token'],
