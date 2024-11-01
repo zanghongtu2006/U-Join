@@ -108,7 +108,6 @@ class _UserListPageState extends State<UserListPage> with SingleTickerProviderSt
     var response = await ApiService().get("/users/users", params: params);
     if (response.statusCode == 200) {
       var data = json.decode(response.body)['data'];
-      print("===================$data");
       List<User> users = List<User>.from(data['rows'].map((item) => User.fromMap(item)));
       return users;
     } else {

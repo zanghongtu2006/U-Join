@@ -2,6 +2,7 @@ package com.zanghongtu.imserver.service.impl;
 
 import com.zanghongtu.imserver.controller.dto.chat.ConversationType;
 import com.zanghongtu.imserver.controller.dto.user.UserStatus;
+import com.zanghongtu.imserver.controller.dto.user.UserType;
 import com.zanghongtu.imserver.model.Conversation;
 import com.zanghongtu.imserver.model.ConversationUser;
 import com.zanghongtu.imserver.model.User;
@@ -38,15 +39,18 @@ public class RegisterServiceImpl implements IRegisterService {
         userInfo.setFullName(userName);
         userInfo.setStatus(UserStatus.REGISTERD);
         userInfo.setAvatar("https://placekitten.com/200/200");
+        userInfo.setType(UserType.USER);
         userInfoService.insert(userInfo);
         createClientConversation(userInfo);
 
         return userInfo;
     }
 
+    /**
+     * 创建第一个对话：用户-客服
+     */
     @Transactional(rollbackOn = Exception.class)
     private void createClientConversation(UserInfo userInfo) {
-        // 创建第一个对话：用户-客服
         UserInfo client = userInfoService.getClient();
         String shortConversationId = "";
         String conversationId = "";

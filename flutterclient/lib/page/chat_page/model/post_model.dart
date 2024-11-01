@@ -47,7 +47,7 @@ class Post {
       id: map['id'],
       userInfo: User.fromMap(map['userInfo']),
       content: map['content'],
-      imageUrls: map['imageUrls'].whereType<String>().toList()??[],
+      imageUrls: map['imageUrls']?.whereType<String>().toList()??[],
       videoUrl: map['videoUrl']??'',
       audioUrl: map['audioUrl']??'',
       like: map['like']??false,

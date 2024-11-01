@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:flutterclient/page/chat_page/chat/file_viewer/file_util.dart';
+import 'package:flutterclient/util/file_util.dart';
 import 'dart:io';
 
 import 'package:permission_handler/permission_handler.dart';

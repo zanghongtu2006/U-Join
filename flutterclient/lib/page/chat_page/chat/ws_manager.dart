@@ -146,7 +146,7 @@ class WsManager {
     }
     _stompClient = StompClient(
       config: StompConfig.sockJS(
-        url: 'http://192.168.168.15:8080/chatserver',
+        url: 'http://192.168.168.25:8081/chatserver',
         webSocketConnectHeaders: {'Authorization': 'Bearer $token'},
         onConnect: _onConnectCallback,
         onDisconnect: _onDisconnected,

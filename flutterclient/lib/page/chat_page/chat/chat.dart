@@ -17,8 +17,7 @@ import '../../../util/api_service.dart';
 import '../../../util/db_manager.dart';
 import '../model/user_model.dart';
 import 'file_viewer/audio_player.dart';
-import 'file_viewer/file_util.dart';
-import 'file_viewer/image_video_picker.dart';
+import '../../../util/file_util.dart';
 import 'file_viewer/image_viewer_fullscreen.dart';
 import 'file_viewer/video_player_widget.dart';
 import 'file_viewer/voice_input_widget.dart';
@@ -106,7 +105,7 @@ class _ChatPageState extends State<ChatPage> {
           if (frame.body != null) {
             // 处理收到的消息
             String? body = frame.body;
-            print('Chat received: $body');
+            print('=======================Chat received: $body');
             if (body != null) {
               Message? message =
                   await MessageUtil.instance.dealReceived(body, mine.id);
@@ -146,8 +145,10 @@ class _ChatPageState extends State<ChatPage> {
     _timers[message.messageId] = Timer(const Duration(seconds: 15), () {
       _updateMessageStatus(message.messageId);
     });
-    ChatService.instance.sendFileMessage(message, _updateFileMessage);
+    ChatService.instance.sendMessage(message, _updateMessage);
   }
+
+  // void _updateFileMessage() {}
 
   void _appendMessage(Message message) {
     setState(() {
@@ -162,8 +163,6 @@ class _ChatPageState extends State<ChatPage> {
       });
     });
   }
-
-  void _updateFileMessage() {}
 
   Future<void> _updateMessage(Message message) async {
     int indexToUpdate =
@@ -395,14 +394,12 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
-  // void _openFilePicker(BuildContext context) {
-  //   Navigator.of(context).push(
-  //     MaterialPageRoute(builder: (_) => ImageVideoPicker()),
-  //   );
-  // }
-
+  /**
+   * 发送图片，音视频
+   * 复制文件->上传文件->buildMessage
+   */
   Future<void> _sendMedia() async {
-    List<File> medias = await FileUtils.instance.directlyOpenFilePicker();
+    List<File> medias = await FileUtils.instance.directlyMediaPicker();
     // 处理选择的文件，例如显示文件名、上传文件等
     List<Message> fileMessagesToSend = [];
     for (File media in medias) {

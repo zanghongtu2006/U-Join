@@ -24,9 +24,6 @@ public class Conversation extends BaseEntity {
     private String shortConversationId;
 
     @Column
-    private ConversationType type;
-
-    @Column
     private Integer unReadCount;
 
     @Column(columnDefinition = "TEXT")

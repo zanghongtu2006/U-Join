@@ -4,16 +4,14 @@ import com.zanghongtu.imserver.model.Dict;
 import com.zanghongtu.imserver.model.DictItem;
 import com.zanghongtu.imserver.service.IDictItemService;
 import com.zanghongtu.imserver.service.IDictService;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
-@SpringBootTest
+@SpringBootTest(classes = MessagingStompWebsocketApplication.class)
 class TestDict {
     @Autowired
     private IDictService dictService;
@@ -23,11 +21,19 @@ class TestDict {
 
     @Test
     public void addDicts() {
-        Dict dict = new Dict();
-        dict.setName("寻求关系");
-        dict.setCode("RELATION_TYPE");
-        dictService.insert(dict);
-
+        Map<String, String> dictMap = Map.of(
+                "寻求关系","RELATION_TYPE",
+                "性别取向","SEXUAL",
+                "性格","PERSONALITY",
+                "拒绝","IREFUSE",
+                "喜欢","ILIKE"
+        );
+        for(Map.Entry<String, String> entry : dictMap.entrySet()) {
+            Dict dict = new Dict();
+            dict.setName(entry.getKey());
+            dict.setCode(entry.getValue());
+            dictService.insert(dict);
+        }
     }
 
     @Test
@@ -46,6 +52,7 @@ class TestDict {
                 DictItem dictItem = new DictItem();
                 dictItem.setDictId(dict.get().getId());
                 dictItem.setDictItemName(item);
+                dictItem.setDictCode("RELATION_TYPE");
                 dictItemService.insert(dictItem);
             }
         }
@@ -67,6 +74,7 @@ class TestDict {
                 DictItem dictItem = new DictItem();
                 dictItem.setDictId(dict.get().getId());
                 dictItem.setDictItemName(item);
+                dictItem.setDictCode("SEXUAL");
                 dictItemService.insert(dictItem);
             }
         }
@@ -96,6 +104,7 @@ class TestDict {
                 DictItem dictItem = new DictItem();
                 dictItem.setDictId(dict.get().getId());
                 dictItem.setDictItemName(item);
+                dictItem.setDictCode("PERSONALITY");
                 dictItemService.insert(dictItem);
             }
         }
@@ -125,6 +134,7 @@ class TestDict {
                 DictItem dictItem = new DictItem();
                 dictItem.setDictId(dict.get().getId());
                 dictItem.setDictItemName(item);
+                dictItem.setDictCode("IREFUSE");
                 dictItemService.insert(dictItem);
             }
         }
@@ -154,6 +164,7 @@ class TestDict {
                 DictItem dictItem = new DictItem();
                 dictItem.setDictId(dict.get().getId());
                 dictItem.setDictItemName(item);
+                dictItem.setDictCode("ILIKE");
                 dictItemService.insert(dictItem);
             }
         }

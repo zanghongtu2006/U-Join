@@ -3,7 +3,6 @@ import 'package:flutterclient/page/chat_page/chat/chat.dart';
 import 'package:flutterclient/page/chat_page/model/conversation_model.dart';
 import 'package:flutterclient/util/chat_util.dart';
 import 'package:flutterclient/util/db_manager.dart';
-import 'package:oktoast/oktoast.dart';
 
 import '../../util/api_service.dart';
 import '../button/logo_button.dart';
@@ -21,7 +20,7 @@ class UserTabView extends StatefulWidget {
 class _UserTabViewState extends State<UserTabView> {
   late String gender = '女';
   late String title = 'gender - 160cm - 其它';
-  late String myUid;
+  late String _myUid;
   late String conversationId;
   late String shortConversationId;
   late List<String> userIds = [];
@@ -44,8 +43,8 @@ class _UserTabViewState extends State<UserTabView> {
   }
 
   Future<void> _initIds() async {
-    myUid = await ApiService().getUid();
-    userIds = [widget.user.id, myUid];
+    _myUid = await ApiService().getUid();
+    userIds = [widget.user.id, _myUid];
     conversationId = ChatUtils.generateConversationId(userIds);
     shortConversationId = conversationId.substring(0, 8) + conversationId.substring(36, 44);
   }
@@ -115,32 +114,31 @@ class _UserTabViewState extends State<UserTabView> {
                   text: '搭讪',
                   onPressed: () {
                     Conversation conversation = Conversation(
-                        conversationId: conversationId,
-                        shortConversationId: shortConversationId,
-                        nickName: widget.user.nickName,
-                        type: 'PERSON',
-                        avatar: widget.user.avatar,
-                        lastMessage: '',
-                        userIds: userIds,
-                        unReadCount: 0,
-                        gender: widget.user.gender,
-                        lastUpdateTime: DateTime.now());
-                    DatabaseManager.instance
-                        .insertOrUpdateConversation(conversation);
-                    print("=======================${conversation.toJson()}");
-                    ApiService().post("/conversations", conversation.toJson());
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatPage(
-                          userIds: [widget.user.id, myUid],
-                          conversationId: conversationId,
-                          shortConversationId: shortConversationId,
-                          nickName: widget.user.nickName,
-                          avatar: widget.user.avatar,
-                        ),
-                      ), // TargetPage是要跳转到的页面
-                    );
+                      conversationId: conversationId,
+                      shortConversationId: shortConversationId,
+                      nickName: widget.user.nickName,
+                      type: 'PERSON',
+                      avatar: widget.user.avatar,
+                      lastMessage: '',
+                      userIds: userIds,
+                      unReadCount: 0,
+                      gender: widget.user.gender,
+                      lastUpdateTime: DateTime.now());
+                      DatabaseManager.instance
+                          .insertOrUpdateConversation(conversation);
+                      ApiService().post("/conversations", conversation.toJson());
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatPage(
+                            userIds: [widget.user.id, _myUid],
+                            conversationId: conversationId,
+                            shortConversationId: shortConversationId,
+                            nickName: widget.user.nickName,
+                            avatar: widget.user.avatar,
+                          ),
+                        ), // TargetPage是要跳转到的页面
+                      );
                     },
                 ),
                 const SizedBox(width: 8)

@@ -12,7 +12,7 @@ class ApiService {
   final storage = const FlutterSecureStorage();
   final timeout = 10;
 
-  ApiService({this.baseUrl = 'http://192.168.168.15:8080'});
+  ApiService({this.baseUrl = 'http://192.168.168.25:8081'});
 
   Future<void> setToken(String accessToken, String refreshToken, String uid) async {
     await storage.write(key: 'access_token', value: accessToken);
@@ -33,7 +33,6 @@ class ApiService {
   Future<String?> getToken() async {
     try {
       String? token = await storage.read(key: 'access_token');
-      // print("================Retrieved token: $token"); // 调试信息
       return token ?? '';
     } catch (e) {
       print("Error getting token: $e"); // 错误处理
@@ -59,7 +58,6 @@ class ApiService {
       return true;
     } else {
       var statusCode = response.statusCode;
-      print("refreshToken：=======$statusCode");
     }
     return false;
   }

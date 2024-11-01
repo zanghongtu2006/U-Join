@@ -48,6 +48,6 @@ public class PostServiceImpl extends BaseServiceImpl<Post, String> implements IP
 
     @Override
     public Page<Post> searchPageFocus(Integer pageIndex, Integer pageSize) {
-        return new PageImpl<>(new LinkedList<>());
+        return new PageImpl<>(new LinkedList<>(), Pageable.ofSize(pageSize), 0L);
     }
 }

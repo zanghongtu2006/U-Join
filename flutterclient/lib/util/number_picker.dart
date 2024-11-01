@@ -83,7 +83,7 @@ class _CustomNumberPickerState extends State<CustomNumberPicker> {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        primary: color,
+        backgroundColor: color,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),

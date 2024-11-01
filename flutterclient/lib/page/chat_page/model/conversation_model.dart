@@ -47,7 +47,7 @@ class Conversation {
     };
   }
 
-  Map<String, dynamic> toMap() {
+  Future<Map<String, dynamic>> toMap() async {
     return {
       'conversationId': conversationId,
       'shortConversationId': shortConversationId,
@@ -61,8 +61,7 @@ class Conversation {
     };
   }
 
-  static Conversation fromMap(Map<String, dynamic> map) {
-    print(map);
+  static Conversation fromMap(Map<String, dynamic> map, String ownerId)  {
     return Conversation(
       conversationId: map['conversationId'],
       shortConversationId: map['shortConversationId'],

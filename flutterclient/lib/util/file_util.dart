@@ -32,6 +32,9 @@ class FileUtils {
 
   FileUtils._init();
 
+  /**
+   * 获取程序空间内的文件路径，UUID作为文件名
+   */
   Future<String> getTargetFilePath(String extension) async {
     // 生成UUID
     var uuid = const Uuid().v4();
@@ -50,14 +53,6 @@ class FileUtils {
     // 定义文件的最终路径（包括新的文件名）
     String filePath = p.join(fullPath, "$uuid$extension");
     return filePath;
-  }
-
-  Future<File?> saveFileToDocumentsDirectory(File file, String extension) async {
-    String? filePath = await getTargetFilePath(extension);
-    if (filePath.isNotEmpty) {
-      return await file.copy(filePath);
-    }
-    return null;
   }
 
   Future<List<File>> directlyImagePicker() async {
@@ -84,7 +79,7 @@ class FileUtils {
     return [];
   }
 
-  Future<List<File>> directlyOpenFilePicker() async {
+  Future<List<File>> directlyMediaPicker() async {
     final result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.media,
@@ -108,6 +103,17 @@ class FileUtils {
       }
     } catch (e) {
       print(e);
+    }
+    return null;
+  }
+
+  /**
+   * 把目标文件存放到程序空间内
+   */
+  Future<File?> saveFileToDocumentsDirectory(File file, String extension) async {
+    String? filePath = await getTargetFilePath(extension);
+    if (filePath.isNotEmpty) {
+      return await file.copy(filePath);
     }
     return null;
   }

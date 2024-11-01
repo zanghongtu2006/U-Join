@@ -17,8 +17,15 @@ class MessageUtil {
 
   Future<bool> sendMessage(Message message) async {
     String destination = '/app/chat';
-    await DatabaseManager.instance.insertMessage(message);
+    await insertOrUpdate(message);
     return WsManager().sendMessage(destination, jsonEncode(message.toSendMap()));
+  }
+
+  static Future<void> insertOrUpdate(Message message) async {
+    await DatabaseManager.instance.insertOrUpdateMessage(message);
+    Conversation conversation = await DatabaseManager.instance.findConversationById(message.conversationId);
+    conversation.lastMessage = message.content.text;
+    await DatabaseManager.instance.insertOrUpdateConversation(conversation);
   }
 
   void putMessageTimers(Message chatModel) {
@@ -29,7 +36,7 @@ class MessageUtil {
 
   Future<void> _setMessageFailed(Message chatModel) async {
     chatModel.sendStatus = 'FAILED';
-    await DatabaseManager.instance.insertMessage(chatModel);
+    await DatabaseManager.instance.insertOrUpdateMessage(chatModel);
     _timers[chatModel.messageId]?.cancel();
     _timers.remove(chatModel.messageId);
   }
@@ -45,7 +52,10 @@ class MessageUtil {
       String replyToMessageId = messageData['additionalInfo']['replyToMessageId'];
       Message message = await DatabaseManager.instance.findMessagesById(replyToMessageId);
       message.sendStatus = 'SUCCESS';
-      DatabaseManager.instance.insertMessage(message);
+      DatabaseManager.instance.insertOrUpdateMessage(message);
+      Conversation conversation = await DatabaseManager.instance.findConversationById(messageData['conversationId']);
+      conversation.lastMessage = message.content.text;
+      DatabaseManager.instance.insertOrUpdateConversation(conversation);
       _removeMessageTimers(replyToMessageId);
       return message;
     } else if (messageData['messageType'] == 'CHAT') {
@@ -89,7 +99,7 @@ class MessageUtil {
       conversation.lastUpdateTime = DateTime.fromMillisecondsSinceEpoch(messageData['timestamp']);
       conversation.lastMessage = messageData['content']['text'];
       conversation.unReadCount = conversation.unReadCount+1;
-      DatabaseManager.instance.insertMessage(message);
+      DatabaseManager.instance.insertOrUpdateMessage(message);
       DatabaseManager.instance.insertOrUpdateConversation(conversation);
       _removeMessageTimers(messageData['messageId']);
       if(!isMe) {

@@ -1,3 +1,4 @@
+import 'package:flutterclient/util/api_service.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -14,11 +15,13 @@ class DatabaseManager {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('chat.db');
+    _database = await _initDB();
     return _database!;
   }
 
-  Future<Database> _initDB(String filePath) async {
+  Future<Database> _initDB() async {
+    String userId = await ApiService().getUid();
+    final filePath = 'chat_$userId.db';
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
@@ -40,12 +43,11 @@ class DatabaseManager {
     lastUpdateTime DATETIME
   );
   ''');
-
     await db.execute('''
-    CREATE TABLE messages (
-   messageId TEXT PRIMARY KEY,
-   conversationId TEXT,
-   shortConversationId TEXT,
+  CREATE TABLE messages (
+    messageId TEXT PRIMARY KEY,
+    conversationId TEXT,
+    shortConversationId TEXT,
     isMe INTEGER,
     senderId TEXT,
     receiverId TEXT,
@@ -83,9 +85,8 @@ class DatabaseManager {
   }
 
   //Message
-  Future<void> insertMessage(Message chatModel) async {
+  Future<void> insertOrUpdateMessage(Message chatModel) async {
     final db = await instance.database;
-    print("=============insertMessage==================${chatModel.toMap()}");
     await db.insert(
       'messages',
       chatModel.toMap(), // 假设您有一个方法将ChatModel转换为Map
@@ -179,9 +180,10 @@ class DatabaseManager {
   //Conversations
   Future<void> insertOrUpdateConversation(Conversation conversation) async {
     final db = await instance.database;
+    Map<String, dynamic> conversationMap = await conversation.toMap();
     await db.insert(
       'conversations',
-      conversation.toMap(), // 假设您有一个方法将ChatModel转换为Map
+      conversationMap, // 假设您有一个方法将ChatModel转换为Map
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
@@ -192,10 +194,12 @@ class DatabaseManager {
     }
   }
 
-  Future<List<Conversation>> listConversations(int offset, int limit) async {
+  Future<List<Conversation>> listConversations(int offset, int limit, String ownerId) async {
     final db = await instance.database;
     final List<Map<String, dynamic>> maps = await db.query(
       'conversations',
+      where: 'ownerId = ?', // 使用ownerId作为查询条件
+      whereArgs: [ownerId], // 参数化查询，防止SQL注入
       orderBy: 'lastUpdateTime DESC',
       limit: limit,
       offset: offset,

@@ -30,7 +30,7 @@ public class ChatController {
 
     @MessageMapping("/chat")
     @SendToUser(value = "/topic/chat-reply")
-    public ChatDTO heartbeat(ChatDTO chatDTO) {
+    public ChatDTO chatReply(ChatDTO chatDTO) {
         log.info("Recv chat: {}", chatDTO);
         //dispatch chat dto
         mqService.sendChatMessage(chatDTO);
@@ -40,6 +40,7 @@ public class ChatController {
         ChatDTO reply = new ChatDTO();
         reply.setAdditionalInfo(additionalInfo);
         reply.setMessageType(MessageType.CHAT_REPLY);
+        reply.setConversationId(chatDTO.getConversationId());
 
         Optional<Conversation> conversation = conversationService.getByConversationId(chatDTO.getConversationId());
         conversation.ifPresent(value -> conversationService.update(getConversation(chatDTO, value)));

@@ -29,9 +29,10 @@ class DataCache {
   Future<void> _fetchConversaionsFromServer(int page, int pageSize) async {
     try {
       var response = await ApiService().get("/conversations/latest");
+      String ownerId = await ApiService().getUid();
       if (response.statusCode == 200) {
         var data = json.decode(response.body)['data']['rows'];
-        List<Conversation> conversations = List<Conversation>.from(data.map((item) => Conversation.fromMap(item)));
+        List<Conversation> conversations = List<Conversation>.from(data.map((item) => Conversation.fromMap(item, ownerId)));
         DatabaseManager.instance.insertOrUpdateConversations(conversations);
       }
     } catch (e) {
@@ -44,7 +45,8 @@ class DataCache {
     _fetchConversaionsFromServer(page, pageSize);
     // fetch from db
     int offset = (page - 1) * pageSize;
-    conversations = await DatabaseManager.instance.listConversations(offset, pageSize);
+    String ownerId = await ApiService().getUid();
+    conversations = await DatabaseManager.instance.listConversations(offset, pageSize, ownerId);
     return conversations;
   }
 }

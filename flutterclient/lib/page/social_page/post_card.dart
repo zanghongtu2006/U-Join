@@ -28,6 +28,7 @@ class _PostCardState extends State<PostCard> {
   final List<String> _userIds = [];
   late String _conversationId;
   late String _shortConversationId;
+  late String _myUid;
 
   @override
   void initState() {
@@ -37,10 +38,10 @@ class _PostCardState extends State<PostCard> {
   }
 
   Future<void> _buildConversationIds() async {
-    String myUid = await ApiService().getUid();
+    _myUid = await ApiService().getUid();
     setState(() {
       _userIds.add(_post.userInfo.id);
-      _userIds.add(myUid);
+      _userIds.add(_myUid);
       _conversationId = ChatUtils.generateConversationId(_userIds);
       _shortConversationId =
           _conversationId.substring(0, 8) + _conversationId.substring(36, 44);
@@ -167,20 +168,19 @@ class _PostCardState extends State<PostCard> {
                     text: '搭讪',
                     onPressed: () {
                       Conversation conversation = Conversation(
-                          conversationId: _conversationId,
-                          shortConversationId: _shortConversationId,
-                          nickName: _post.userInfo.nickName,
-                          type: 'PERSON',
-                          avatar: _post.userInfo.avatar,
-                          lastMessage: '',
-                          userIds: _userIds,
-                          unReadCount: 0,
-                          gender: _post.userInfo.gender,
-                          lastUpdateTime: DateTime.now());
-                      DatabaseManager.instance
+                        conversationId: _conversationId,
+                        shortConversationId: _shortConversationId,
+                        nickName: _post.userInfo.nickName,
+                        type: 'PERSON',
+                        avatar: _post.userInfo.avatar,
+                        lastMessage: '',
+                        userIds: _userIds,
+                        unReadCount: 0,
+                        gender: _post.userInfo.gender,
+                        lastUpdateTime: DateTime.now());
+                        DatabaseManager.instance
                           .insertOrUpdateConversation(conversation);
-                      print("=======================${conversation.toJson()}");
-                      ApiService()
+                        ApiService()
                           .post("/conversations", conversation.toJson());
                       Navigator.push(
                         context,

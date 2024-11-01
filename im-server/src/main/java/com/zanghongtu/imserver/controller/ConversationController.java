@@ -124,21 +124,23 @@ public class ConversationController extends BaseController {
         );
         List<ConversationDTO> dtos = new LinkedList<>();
         for (ConversationUser model : models) {
-            dtos.add(model2dto(conversationIdToUids.get(model.getConversationId()), userInfoMap, conversationMap.get(model.getConversationId())));
+            dtos.add(model2dto(model, conversationMap.get(model.getConversationId()),
+                    conversationIdToUids.get(model.getConversationId()), userInfoMap));
         }
         return dtos;
     }
 
-    private ConversationDTO model2dto(Set<String> userIds, Map<String, UserInfo> userInfoMap, Conversation conversation) {
+    private ConversationDTO model2dto(ConversationUser conversationUser, Conversation conversation,
+                                      Set<String> userIds, Map<String, UserInfo> userInfoMap) {
         ConversationDTO dto = new ConversationDTO();
         dto.setConversationId(conversation.getConversationId());
         dto.setShortConversationId(conversation.getShortConversationId());
-        dto.setType(conversation.getType());
-        dto.setLastMessage(conversation.getLastMessage());
-        dto.setUnReadCount(conversation.getUnReadCount());
+        dto.setLastMessage(conversation.getLastMessage()==null?"":conversation.getLastMessage());
+        dto.setUnReadCount(conversation.getUnReadCount()==null?0:conversation.getUnReadCount());
         dto.setLastUpdateTime(conversation.getLastUpdateTime());
         dto.setUserIds(userIds);
-        if (conversation.getType() == ConversationType.PERSON) {
+        dto.setType(conversationUser.getType());
+        if (conversationUser.getType() == ConversationType.PERSON) {
             Optional<String> myUid = ReqInfoOperator.get().getUserId();
             if (myUid.isPresent()) {
                 for (String uid : userIds) {
@@ -149,7 +151,7 @@ public class ConversationController extends BaseController {
                     }
                 }
             }
-        } else if (conversation.getType() == ConversationType.SYSTEM) {
+        } else if (conversationUser.getType() == ConversationType.SYSTEM) {
             Optional<String> myUid = ReqInfoOperator.get().getUserId();
             if (myUid.isPresent()) {
                 for (String uid : userIds) {
@@ -163,6 +165,7 @@ public class ConversationController extends BaseController {
         }
         return dto;
     }
+
 }
 
 

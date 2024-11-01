@@ -1,4 +1,3 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterclient/page/mine_page/sub_page/task_page.dart';
 import 'package:oktoast/oktoast.dart';
@@ -16,6 +15,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
+  PageController _pageController = PageController(); // 添加 PageController
 
   @override
   void initState() {
@@ -26,6 +26,7 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     _tabController?.dispose();
+    _pageController.dispose(); // 销毁 PageController
     super.dispose();
   }
 
@@ -94,24 +95,23 @@ class _HomePageState extends State<HomePage>
                     crossAxisCount: 3,
                     shrinkWrap: true,
                     children: <Widget>[
-                      CarouselSlider(
-                        options: CarouselOptions(
-                          autoPlay: true, // 自动播放
-                          enlargeCenterPage: false, // 禁用放大显示
-                          viewportFraction: 0.9, // 图片占轮播容器的宽度比例
-                        ),
-                        items: const [
-                          Image(image:AssetImage('assets/girls_voice/girl_voice_1.png')),
-                          Image(image:AssetImage('assets/girls_voice/girl_voice_2.png')),
-                          Image(image:AssetImage('assets/girls_voice/girl_voice_3.png')),
-                          Image(image:AssetImage('assets/girls_voice/girl_voice_4.png')),
-                          Image(image:AssetImage('assets/girls_voice/girl_voice_5.png')),
-                          Image(image:AssetImage('assets/girls_voice/girl_voice_6.png')),
-                          Image(image:AssetImage('assets/girls_voice/girl_voice_7.png')),
-                          Image(image:AssetImage('assets/girls_voice/girl_voice_8.png')),
-                          Image(image:AssetImage('assets/girls_voice/girl_voice_9.png')),
-                          // 添加更多轮播项
-                        ],
+                      SizedBox(
+                        height: 150, // 设置高度
+                        child: PageView(
+                        controller: _pageController,
+                        children: const [
+                            Image(image:AssetImage('assets/girls_voice/girl_voice_1.png')),
+                            Image(image:AssetImage('assets/girls_voice/girl_voice_2.png')),
+                            Image(image:AssetImage('assets/girls_voice/girl_voice_3.png')),
+                            Image(image:AssetImage('assets/girls_voice/girl_voice_4.png')),
+                            Image(image:AssetImage('assets/girls_voice/girl_voice_5.png')),
+                            Image(image:AssetImage('assets/girls_voice/girl_voice_6.png')),
+                            Image(image:AssetImage('assets/girls_voice/girl_voice_7.png')),
+                            Image(image:AssetImage('assets/girls_voice/girl_voice_8.png')),
+                            Image(image:AssetImage('assets/girls_voice/girl_voice_9.png')),
+                            // 添加更多轮播项
+                          ],
+                        )
                       ),
                       const FeatureButton(imagePath: 'assets/home_marray_icon.png'),
                       const Column(

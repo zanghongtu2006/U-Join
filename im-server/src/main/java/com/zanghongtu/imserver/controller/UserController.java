@@ -63,7 +63,9 @@ public class UserController extends BaseController {
 
         Specification<UserInfo> itemSpec = (root, criteriaQuery, criteriaBuilder) -> {
             Predicate notId = criteriaBuilder.notEqual(root.get("id"), ReqInfoOperator.get().getUserId().get());
-            return notId;
+            Predicate justUser = criteriaBuilder.equal(root.get("type"), UserType.USER);
+            Predicate combinedPredicate = criteriaBuilder.and(notId, justUser);
+            return combinedPredicate;
         };
 
         Page<UserInfo> pageResult = userInfoService.search(itemSpec,

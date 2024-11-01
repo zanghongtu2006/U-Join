@@ -19,23 +19,23 @@ class ChatService {
     bool sendResult = await MessageUtil.instance.sendMessage(message);
     if (!sendResult) {
       message.sendStatus = 'FAILED';
-      await DatabaseManager.instance.insertMessage(message);
+      MessageUtil.insertOrUpdate(message);
     } else {
       MessageUtil.instance.putMessageTimers(message);
     }
     onMessageSent(message);
   }
 
-  void sendFileMessage(Message message, SendFileMessageCallback onMessageSent) async {
-    bool sendResult = await MessageUtil.instance.sendMessage(message);
-    if (!sendResult) {
-      message.sendStatus = 'FAILED';
-      await DatabaseManager.instance.insertMessage(message);
-    } else {
-      MessageUtil.instance.putMessageTimers(message);
-    }
-    onMessageSent();
-  }
+  // void sendFileMessage(Message message, SendFileMessageCallback onMessageSent) async {
+  //   bool sendResult = await MessageUtil.instance.sendMessage(message);
+  //   if (!sendResult) {
+  //     message.sendStatus = 'FAILED';
+  //     MessageUtil.insertOrUpdate(message);
+  //   } else {
+  //     MessageUtil.instance.putMessageTimers(message);
+  //   }
+  //   onMessageSent(message);
+  // }
 
   void retrySendMessage(Message message, SendMessageCallback onMessageSent) async {
     await DatabaseManager.instance.deleteMessage(message.messageId);

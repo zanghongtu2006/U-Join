@@ -6,11 +6,9 @@ import 'package:flutterclient/util/api_service.dart';
 class ChatUtils {
   static Future<String?> generateConversationIdByUser(String userId) async {
     String? myUid = await ApiService().getUid();
-    if (myUid != null) {
-      List<String> participantIds = [userId, myUid];
-      return generateConversationId(participantIds);
-    }
-    return null;
+    List<String> participantIds = [userId, myUid];
+    return generateConversationId(participantIds);
+      return null;
   }
 
   static String generateConversationId(List<String> participantIds) {

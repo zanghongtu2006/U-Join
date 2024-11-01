@@ -1,9 +1,8 @@
 package com.zanghongtu.imserver.service.impl;
 
-
 import com.zanghongtu.imserver.service.IBaseService;
 import com.zanghongtu.imserver.threadlocal.ReqInfoOperator;
-import org.antlr.v4.runtime.misc.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.support.JpaRepositoryImplementation;

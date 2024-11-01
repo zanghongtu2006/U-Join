@@ -5,7 +5,7 @@ import 'package:flutterclient/util/api_service.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../chat_page/chat/file_viewer/audio_player.dart';
-import '../chat_page/chat/file_viewer/file_util.dart';
+import '../../util/file_util.dart';
 import '../chat_page/chat/file_viewer/video_player_widget.dart'; // 引入图片选择器插件
 
 class CreatePostScreen extends StatefulWidget {
@@ -290,7 +290,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     }
     // 发送POST请求创建新的帖子
     final response = await ApiService().post('/posts', postData);
-    print('=========================${response.statusCode}');
-    print('=========================${response.body}');
+    // 检查响应状态码，如果成功则返回上一个页面
+    if (response.statusCode == 200) {
+      Navigator.pop(context); // 关闭当前页面并返回到上一个页面
+    } else {
+      // 处理错误情况，例如显示一个错误消息
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('发布失败，请稍后再试')),
+      );
+    }
   }
 }

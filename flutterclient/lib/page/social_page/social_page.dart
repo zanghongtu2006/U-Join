@@ -35,11 +35,15 @@ class _SocialPageState extends State<SocialPage> with SingleTickerProviderStateM
     super.dispose();
   }
 
-  void _fetchPosts() async {
-    List<Post> posts = await _fetchNewPosts();
-    setState(() {
-      _posts = posts;
-    });
+  Future<void> _fetchPosts() async {
+    try {
+      List<Post> posts = await _fetchNewPosts();
+      setState(() {
+        _posts = posts;
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<List<Post>> _fetchNewPosts() async {
@@ -49,11 +53,8 @@ class _SocialPageState extends State<SocialPage> with SingleTickerProviderStateM
     });
     _searchParams['type'] = _searchType;
     var response = await ApiService().get('/posts', params: _searchParams);
-    print("=======${response.statusCode}");
-    print("=======${response.body}");
     if (response.statusCode == 200) {
       var data = json.decode(response.body)['data'];
-      print("===================$data");
       List<Post> posts = List<Post>.from(data['rows'].map((item) => Post.fromMap(item)));
       setState(() {
         _isLoading = false;
@@ -70,74 +71,77 @@ class _SocialPageState extends State<SocialPage> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: <Widget>[
-          const SizedBox(height: 30),
-          FilterButtons(
-            // 使用 FilterButtons 组件
-            onSelected: (index) {
-              setState(() {
-                // 根据不同的筛选条件触发不同的操作
-                switch (index) {
-                  case 0:
-                    setState(() {
-                      _searchParams['pageIndex'] = 1;
-                      _searchType = 'RANDOM';
-                    });
-                    _fetchPosts();
-                    break;
-                  case 1:
-                    setState(() {
-                      _searchParams['pageIndex'] = 1;
-                      _searchType = 'LATEST';
-                    });
-                    _fetchPosts();
-                    // 处理最新筛选条件
-                    break;
-                  case 2:
-                    setState(() {
-                      _searchParams['pageIndex'] = 1;
-                      _searchType = 'VOICE';
-                    });
-                    _fetchPosts();
-                    // 处理声控筛选条件
-                    break;
-                  case 3:
-                    setState(() {
-                      _searchParams['pageIndex'] = 1;
-                      _searchType = 'FOCUS';
-                    });
-                    _fetchPosts();
-                    // 处理关注筛选条件
-                    break;
-                  default:
-                    break;
-                }
-              });
-            },
-            onFilter: () {
-              // 处理筛选按钮点击事件
-              // 可以弹出筛选条件的底部弹窗或执行其他操作
-            },
-          ),
-          Expanded(
-            child: ListView.builder(
-                padding: EdgeInsets.zero,
-                controller: _scrollController,
-                itemCount: _posts.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == _posts.length) {
-                    // 列表最后一项，展示加载指示器
-                    return _isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : const SizedBox.shrink();
-                  }
-                  Post post = _posts[index];
-                  return PostCard(post: post); // 使用你的UserTabView组件展示用户信息
+      body: RefreshIndicator(
+          onRefresh: _fetchPosts,
+          child: Column(
+            children: <Widget>[
+              const SizedBox(height: 30),
+              FilterButtons(
+                // 使用 FilterButtons 组件
+                onSelected: (index) {
+                  setState(() {
+                    // 根据不同的筛选条件触发不同的操作
+                    switch (index) {
+                      case 0:
+                        setState(() {
+                          _searchParams['pageIndex'] = 1;
+                          _searchType = 'RANDOM';
+                        });
+                        _fetchPosts();
+                        break;
+                      case 1:
+                        setState(() {
+                          _searchParams['pageIndex'] = 1;
+                          _searchType = 'LATEST';
+                        });
+                        _fetchPosts();
+                        // 处理最新筛选条件
+                        break;
+                      case 2:
+                        setState(() {
+                          _searchParams['pageIndex'] = 1;
+                          _searchType = 'VOICE';
+                        });
+                        _fetchPosts();
+                        // 处理声控筛选条件
+                        break;
+                      case 3:
+                        setState(() {
+                          _searchParams['pageIndex'] = 1;
+                          _searchType = 'FOCUS';
+                        });
+                        _fetchPosts();
+                        // 处理关注筛选条件
+                        break;
+                      default:
+                        break;
+                    }
+                  });
                 },
-            ),
+                onFilter: () {
+                  // 处理筛选按钮点击事件
+                  // 可以弹出筛选条件的底部弹窗或执行其他操作
+                },
+              ),
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  controller: _scrollController,
+                  itemCount: _posts.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == _posts.length) {
+                      // 列表最后一项，展示加载指示器
+                      return _isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : const SizedBox.shrink();
+                    }
+                    Post post = _posts[index];
+                    return PostCard(post: post); // 使用你的UserTabView组件展示用户信息
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
