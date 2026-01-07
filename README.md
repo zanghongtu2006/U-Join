@@ -2,8 +2,6 @@
 
 U‑Join is a **high‑performance, real‑time Instant Messaging (IM) system** designed to demonstrate **backend architecture design, distributed messaging, and mobile client integration**.
 
-This project is intentionally built as a **production‑oriented technical showcase** for engineering interviews and system design discussions, focusing on **throughput, scalability, and backend load reduction** rather than feature completeness.
-
 ---
 
 ## 🎯 Design Goals
@@ -162,7 +160,7 @@ U‑Join/
 
 ---
 
-## 🧪 Why This Project Matters (For Recruiters)
+## 🧪 What Dose This Project Matters
 
 This repository demonstrates:
 
