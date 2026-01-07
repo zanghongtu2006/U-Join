@@ -71,7 +71,7 @@ public class WebSocketSessionHandler {
     private DefaultMQPushConsumer createConsumerForUser(String topic, String userId) throws MQClientException {
         String consumerGroup = "CHAT_GROUP"; // 所有用户共享同一个消费者组
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(consumerGroup);
-        consumer.setClientIP("192.168.168.15");
+        consumer.setClientIP("192.168.168.25");
         consumer.setNamesrvAddr(rocketMQTemplate.getProducer().getNamesrvAddr()); // 设置NameServer地址
         consumer.subscribe(topic, userId); // 订阅特定用户的Tag
 
@@ -87,7 +87,7 @@ public class WebSocketSessionHandler {
     }
 
     private void handlerMessage(MessageExt msg) {
-        log.info("{} Receive New Messages:{} {}", Thread.currentThread().getName(), msg);
+        log.info("{} Receive New Messages:{}b", Thread.currentThread().getName(), msg);
         String message = new String(msg.getBody());
         String tags = msg.getTags();
         log.info("handlerMessage: {}", message);

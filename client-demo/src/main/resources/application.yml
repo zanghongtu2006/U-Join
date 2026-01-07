@@ -1,5 +1,5 @@
-server.port: 8081
+server.port: 8082
 
-ws.url: ws://localhost:8080/chatserver
+ws.url: ws://localhost:8081/chatserver
 
 debug: false

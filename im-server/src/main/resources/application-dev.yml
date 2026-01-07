@@ -21,3 +21,5 @@ rocketmq:
 #springdoc:
 #  swagger-ui:
 #    path: /swagger-ui.html
+logging.level.org.springframework.security: DEBUG
+logging.level.org.springframework.web.socket: DEBUG
