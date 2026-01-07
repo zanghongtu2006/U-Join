@@ -1,4 +1,4 @@
-# U‑Join — High‑Performance IM System (Technical Showcase)
+# U‑Join — High‑Performance IM System
 
 U‑Join is a **high‑performance, real‑time Instant Messaging (IM) system** designed to demonstrate **backend architecture design, distributed messaging, and mobile client integration**.
 
